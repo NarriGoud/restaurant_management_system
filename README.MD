@@ -47,19 +47,16 @@ Ensure you have the following services running and accessible before starting th
 
 Clone the repository to your local system:
 
-```bash
-git clone <repo link>
+```bash git clone https://github.com/NarriGoud/restaurant_management_system.git
 
 ### 2. Navigate to repo
 
 Navigate to the repository:
 
-```bash
-cd <repo name>
+```bash cd <repo name>
 
 ### 3. Installing Dependencies
 
 Install all necessary Python packages using the provided requirements.txt file:
 
-```bash
-pip install -r requirements.txt
+```bash pip install -r requirements.txt
