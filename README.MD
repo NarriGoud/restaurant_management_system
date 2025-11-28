@@ -1,9 +1,6 @@
 # 🍽️ TablePay: Smart Dining Management System
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/Framework-FastAPI-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
-[![Database](https://img.shields.io/badge/Database-MongoDB-47A248?logo=mongodb)](https://www.mongodb.com/)
-[![Cache](https://img.shields.io/badge/Cache-Redis-DC382D?logo=redis)](https://redis.io/)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python)](https://www.python.org/) [![FastAPI](https://img.shields.io/badge/Framework-FastAPI-009688?logo=fastapi)](https://fastapi.tiangolo.com/) [![Database](https://img.shields.io/badge/Database-MongoDB-47A248?logo=mongodb)](https://www.mongodb.com/) [![Cache](https://img.shields.io/badge/Cache-Redis-DC382D?logo=redis)](https://redis.io/)
 
 ---
 
@@ -27,13 +24,11 @@ The system is split into specialized dashboards for efficient workflow managemen
 
 ## 🛠️ Architecture & Data Flow
 
-TablePay is built on a standard Python **FastAPI** backend (`main.py`) using an optimized **Cache-Aside Pattern** to handle high-volume, low-latency order updates.
-
-
+TablePay is built on a Python **FastAPI** backend (`main.py`) using an optimized **Cache-Aside Pattern** to handle high-volume, low-latency order updates.
 
 ### Data Strategy:
 
-* **Active Orders (High Speed):** New and in-progress orders (Pending, Preparing, Ready) are stored in the **Redis** cache (`cache.py`) for millisecond access by the Kitchen portal.
+* **Active Orders (High Speed):** New and in-progress orders (Pending, Preparing, Ready) are stored in the **Redis** cache (`cache.py`) for millisecond access by the Kitchen portal.  
 * **Completed Orders (Persistence):** When an order is marked as **'served'**, it is logged to the **MongoDB** `ORDER_COLLECTION` for permanent records and immediately removed from Redis.
 
 ---
@@ -44,13 +39,27 @@ TablePay is built on a standard Python **FastAPI** backend (`main.py`) using an 
 
 Ensure you have the following services running and accessible before starting the application:
 
-1.  **Python 3.8+**
-2.  **MongoDB** instance
-3.  **Redis** server
+1. **Python 3.8+**  
+2. **MongoDB** instance  
+3. **Redis** server  
 
-### 1. Install Dependencies
+### 1. Cloning the Repository
 
-Install all necessary Python packages using the provided `requirements.txt` file:
+Clone the repository to your local system:
+
+```bash
+git clone <repo link>
+
+### 2. Navigate to repo
+
+Navigate to the repository:
+
+```bash
+cd <repo name>
+
+### 3. Installing Dependencies
+
+Install all necessary Python packages using the provided requirements.txt file:
 
 ```bash
 pip install -r requirements.txt
