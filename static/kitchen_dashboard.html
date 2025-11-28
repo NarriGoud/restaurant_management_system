@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TablePay Kitchen Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* General Reset and Font */
+        :root {
+            /* 🎨 ADMIN/CASHIER/KITCHEN DASHBOARD COLORS */
+            --dark-bg: #1e1e2d;         /* Main background */
+            --main-dark: #2a2a3e;       /* Header and Card Backgrounds */
+            --secondary-dark: #37374a;  /* Not heavily used here */
+            --accent-orange: #f55f30;   /* Primary accent color (Preparing/Action) */
+            --text-light: #ffffff;      /* Main text color */
+            --text-muted: #aaaaaa;      /* Muted text for headers/subtext */
+            --border-color: #444466;    /* Dark border color */
+            --pending-red: #d9534f;     /* Red for pending status */
+            --ready-green: #5cb85c;     /* Green for ready status */
+            --completed-gray: #555566;  /* Muted gray for completed/served */
+            --max-width: 1400px;        /* Consistent max width */
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--dark-bg); /* Dark background */
+            color: var(--text-light); /* Light text color */
+            min-height: 100vh;
+        }
+
+
+        /* --- Header Section --- */
+        .header {
+            display: flex;
+            justify-content: space-around; 
+            align-items: center;
+            padding: 15px 30px;
+            background-color: var(--main-dark); 
+            box-shadow: 0 2px 4px var(--shadow-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            background-color: var(--accent-orange);
+            color: var(--text-light);
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-right: 10px; 
+            font-size: 14px;
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-text h1 {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--text-light);
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: var(--text-muted); 
+            margin: 0;
+            margin-top: 2px; 
+        }
+        
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column; 
+            align-items: flex-start;
+            font-size: 14px;
+            gap: 0; 
+        }
+
+        .user-info span:first-child {
+            color: var(--text-light);
+            font-weight: bold;
+            font-size: 1em;
+        }
+
+        .user-info span:last-child {
+            color: var(--text-muted); 
+            font-weight: normal; 
+            font-size: 0.9em;
+        }
+
+        .logout-btn {
+            background-color: var(--accent-orange);
+            color: var(--text-light);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px; 
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .logout-btn:hover {
+            background-color: #e05e2b;
+        }
+        
+        /* --- Main Content Container --- */
+        .main-container {
+            max-width: var(--max-width);
+            margin: 20px auto; 
+            padding: 0 20px; 
+        }
+
+        .portal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color); 
+        }
+
+        .portal-title {
+            display: flex;
+            align-items: center;
+        }
+
+        .chef-hat {
+            font-size: 30px;
+            margin-right: 10px;
+        }
+
+        .portal-title h2 {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-light);
+            margin: 0;
+        }
+
+        .portal-title p {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .status-summary {
+            display: flex;
+            gap: 20px;
+            text-align: right;
+            border-left: 1px solid var(--border-color); 
+            padding-left: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-item span:first-child {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .status-item span:last-child {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--text-light);
+        }
+
+        .status-summary .cooking-count {
+            color: var(--accent-orange); 
+        }
+
+
+        /* --- Order Tabs --- */
+        .order-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 15px;
+            font-size: 14px;
+            color: var(--text-muted);
+            cursor: pointer;
+            border: none;
+            background: none;
+            transition: color 0.2s;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-orange); 
+            font-weight: bold;
+            border-bottom: 2px solid var(--accent-orange);
+            margin-bottom: -2px; 
+        }
+
+        /* --- NEW GRID LAYOUT FOR ORDER CARDS --- */
+        .order-grid {
+            display: grid;
+            /* Default to a single column for small screens */
+            grid-template-columns: 1fr; 
+            gap: 20px;
+        }
+        
+        /* Media Query for 3-column layout on large screens (Desktop) */
+        @media (min-width: 1200px) {
+            .order-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Media Query for 2-column layout on medium screens (Tablet) */
+        @media (min-width: 768px) and (max-width: 1199px) {
+            .order-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        /* --- END NEW GRID LAYOUT --- */
+        
+        .order-card {
+            background-color: var(--main-dark); 
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            /* Margin bottom removed as grid gap handles spacing */
+            box-shadow: 0 4px 8px var(--shadow-color);
+            transition: transform 0.2s;
+        }
+        
+        .order-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+        
+        /* Status Tag Styles */
+        .card-status { 
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .status-pending { background-color: var(--pending-red); }
+        .status-preparing { background-color: var(--accent-orange); }
+        .status-ready { background-color: var(--ready-green); }
+        .status-served { background-color: var(--completed-gray); }
+
+        .table-info {
+            display: flex;
+            align-items: baseline;
+        }
+
+        .table-info h3 {
+            font-size: 18px;
+            color: var(--text-light);
+            margin: 0 10px 0 0;
+        }
+
+        .order-details {
+            font-size: 14px; /* Increased size for visibility */
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .order-details span {
+            font-weight: bold;
+            color: var(--text-light);
+        }
+
+        .time-ago {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+        }
+
+        .time-ago::before {
+            content: "◷"; 
+            margin-right: 5px;
+        }
+
+        /* Renamed to .order-items (used in script) */
+        .order-items { 
+            list-style: none;
+            padding: 0;
+            margin: 15px 0 20px 0;
+        }
+
+        .order-items li {
+            font-size: 16px; 
+            color: var(--text-light);
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .order-items li::before {
+            content: "•";
+            color: var(--text-muted);
+            font-size: 18px;
+            line-height: 0.1;
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .order-items .item-price {
+            float: right;
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+        
+        /* Generic Button Style for Card Footer */
+        .card-footer button {
+            width: 100%;
+            color: var(--text-light);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+        
+        /* Specific Button Status Styles */
+        .prepare-btn {
+            background-color: var(--accent-orange);
+        }
+
+        .ready-btn {
+            background-color: var(--ready-green);
+        }
+        
+        .completed-btn {
+            background-color: var(--completed-gray);
+            cursor: default;
+        }
+        
+        .prepare-btn:hover:not(:disabled) {
+            background-color: #e05e2b;
+        }
+        
+        .ready-btn:hover:not(:disabled) {
+            background-color: #4CAF50;
+        }
+        
+        .card-footer button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .prepare-btn::before {
+            content: "🍳"; 
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        
+        .ready-btn::before {
+            content: "✅"; 
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        
+        .completed-btn::before {
+            content: "🍽️"; 
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        /* --- Responsiveness --- */
+        @media (max-width: 767px) {
+             /* Main Content Padding */
+            .main-container {
+                padding: 20px 5%;
+            }
+            
+            .portal-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .status-summary {
+                border-left: none;
+                padding-left: 0;
+                margin-top: 15px;
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px;
+            }
+
+            .user-actions {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 15px; 
+                padding-top: 10px;
+                border-top: 1px solid var(--secondary-dark);
+                gap: 10px;
+            }
+            
+            .main-container {
+                padding: 15px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo-icon">T</div>
+            <div class="logo-text">
+                <h1>TablePay</h1>
+                <p>Smart Dining. Smarter Billing</p> </div>
+        </div>
+        <div class="user-actions"> 
+            <div class="user-info">
+                <span id="user-name-display">CHEF MIKE</span> 
+                <span id="user-portal-display">Kitchen Portal</span>
+            </div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </div>
+    </header>
+    <div class="main-container">
+        <div class="portal-header">
+            <div>
+                <div class="portal-title">
+                    <span class="chef-hat">🧑‍🍳</span>
+                    <div>
+                        <h2>Kitchen Portal</h2>
+                        <p>Manage and track incoming orders in real-time</p>
+                    </div>
+                </div>
+            </div>
+            <div class="status-summary">
+                <div class="status-item">
+                    <span>Pending</span>
+                    <span id="pending-count">0</span>
+                </div>
+                <div class="status-item">
+                    <span>Cooking</span>
+                    <span class="cooking-count" id="cooking-count">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="order-tabs">
+            <button class="tab-btn active" data-status="all" id="all-orders-tab">All Orders (0)</button>
+            <button class="tab-btn" data-status="pending" id="pending-tab">Pending (0)</button>
+            <button class="tab-btn" data-status="preparing" id="preparing-tab">Preparing (0)</button>
+            <button class="tab-btn" data-status="ready" id="ready-tab">Ready (0)</button>
+        </div>
+
+        <div id="order-grid" class="order-grid">
+            <p style="text-align: center; padding: 50px;" id="loading-message">Loading orders...</p>
+        </div>
+    </div>
+
+    <script>
+        // Global DOM references
+        const orderGrid = document.getElementById('order-grid');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const logoutButton = document.getElementById('logout-btn');
+        
+        // Tab button references for updating counts
+        const allOrdersTab = document.getElementById('all-orders-tab');
+        const pendingTab = document.getElementById('pending-tab');
+        const preparingTab = document.getElementById('preparing-tab');
+        const readyTab = document.getElementById('ready-tab');
+        
+        // Status summary references
+        const pendingCountDisplay = document.getElementById('pending-count');
+        const cookingCountDisplay = document.getElementById('cooking-count'); // Maps to 'preparing'
+
+        let currentOrders = []; 
+
+        /**
+         * Fetches orders from the backend API.
+         */
+        async function fetchOrders() {
+            try {
+                // Show loading message while fetching
+                if (orderGrid.children.length === 0 || orderGrid.querySelector('#loading-message')) {
+                    orderGrid.innerHTML = '<p style="text-align: center; padding: 50px;" id="loading-message">Loading orders...</p>';
+                }
+                
+                const response = await fetch('/api/orders');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const orders = await response.json(); 
+                
+                if (Array.isArray(orders) && orders.length > 0) {
+                    renderOrders(orders);
+                } else {
+                    orderGrid.innerHTML = '<p style="text-align: center; padding: 50px; color: var(--text-muted);">No active orders currently.</p>';
+                }
+                
+            } catch (error) {
+                console.error('Fetch or Parsing error:', error);
+                orderGrid.innerHTML = '<p style="text-align: center; padding: 50px; color: var(--pending-red);">🚨 Could not load orders. Check the backend connection.</p>';
+            }
+        }
+
+        /**
+         * Renders the fetched orders as HTML cards and updates counts.
+         */
+        function renderOrders(orders) {
+            orderGrid.innerHTML = ''; 
+            let counts = { all: 0, pending: 0, preparing: 0, ready: 0 };
+            
+            orders.forEach(order => {
+                counts.all++;
+                counts[order.status] = (counts[order.status] || 0) + 1;
+                
+                const card = createOrderCard(order);
+                orderGrid.appendChild(card);
+            });
+            
+            // Update Tab Counts
+            allOrdersTab.textContent = `All Orders (${counts.all})`;
+            pendingTab.textContent = `Pending (${counts.pending})`;
+            preparingTab.textContent = `Preparing (${counts.preparing})`;
+            readyTab.textContent = `Ready (${counts.ready})`;
+            
+            // Update Status Summary Counts
+            pendingCountDisplay.textContent = counts.pending;
+            cookingCountDisplay.textContent = counts.preparing;
+
+            // Re-apply tab filter after rendering
+            const activeTab = document.querySelector('.tab-btn.active') 
+                ? document.querySelector('.tab-btn.active').getAttribute('data-status')
+                : 'all';
+            filterOrders(activeTab);
+            
+            // Attach event listeners to new status buttons
+            attachStatusButtonListeners();
+        }
+
+        /**
+         * Creates the HTML for a single order card.
+         */
+        function createOrderCard(order) {
+            const date = new Date(order.created_at);
+            const timeString = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+            let buttonText = 'Action';
+            let nextStatus = '';
+            let buttonClass = ''; 
+            let disabled = '';
+
+            // --- CRITICAL FIX: Explicitly determine next status & disable 'ready' ---
+            if (order.status === 'pending') {
+                buttonText = 'Start Cooking';
+                nextStatus = 'preparing';
+                buttonClass = 'prepare-btn';
+            } else if (order.status === 'preparing') {
+                buttonText = 'Ready for Pickup';
+                nextStatus = 'ready';
+                buttonClass = 'ready-btn';
+            } else if (order.status === 'ready') { 
+                // Order is ready, visible, but no more kitchen action (disabled)
+                buttonText = 'Ready for Pickup'; 
+                buttonClass = 'ready-btn';
+                disabled = 'disabled'; 
+                nextStatus = '';
+            } else if (order.status === 'served') {
+                buttonText = 'Completed'; 
+                buttonClass = 'completed-btn';
+                disabled = 'disabled';
+                nextStatus = '';
+            } else {
+                buttonText = 'Status Unknown';
+                buttonClass = 'completed-btn';
+                disabled = 'disabled';
+                nextStatus = 'unknown';
+            }
+            // --- CRITICAL FIX END ---
+            
+            const itemsHtml = order.items.map(item => 
+                `<li>${item.quantity}x ${item.name} <span class="item-price">₹${item.price.toFixed(2)}</span></li>`
+            ).join('');
+
+            const card = document.createElement('div');
+            card.className = 'order-card';
+            
+            // --- ID Fix: Ensure ID is clean (string) and not uppercased for API calls ---
+            const fullOrderId = String(order.id || order._id || '').trim();
+            // Only the display ID is uppercased and truncated
+            const displayId = fullOrderId.length > 6 ? fullOrderId.slice(-6).toUpperCase() : fullOrderId.toUpperCase() || 'N/A'; 
+            // --- ID Fix END ---
+            
+            // Set data attributes
+            card.setAttribute('data-order-id', fullOrderId); // Use the original full ID here
+            card.setAttribute('data-status', order.status);
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="table-info">
+                        <h3>Order #${displayId}</h3>
+                    </div>
+                    <div class="time-ago">${timeString}</div>
+                </div>
+                <div class="card-status status-${order.status}">
+                    ${order.status.toUpperCase()}
+                </div>
+                <div class="order-details">
+                    Table: <span>${order.table_id}</span> | Paid by: ${order.payment_mode}
+                </div>
+                <ul class="order-items">
+                    ${itemsHtml}
+                </ul>
+                <div class="card-footer">
+                    <button class="${buttonClass}" 
+                            data-id="${fullOrderId}" 
+                            data-next-status="${nextStatus}"
+                            data-status-text="${buttonText}"
+                            ${disabled}>
+                        ${buttonText}
+                    </button>
+                </div>
+            `;
+            return card;
+        }
+
+        /**
+         * Updates the order status via the API and refreshes the order list.
+         */
+        async function updateOrderStatus(orderId, newStatus, buttonElement) {
+            console.log(`Attempting to update Order ${orderId} to status: ${newStatus}`);
+            
+            let originalHtml = buttonElement.innerHTML;
+            let originalDisabled = buttonElement.disabled;
+            
+            // 1. Disable button immediately & show spinner (Prevent Race Condition 1)
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Updating...`; 
+            
+            try {
+                const response = await fetch(`/api/orders/${orderId}/status`, {
+                    method: 'PUT', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus }) 
+                });
+
+                if (!response.ok) {
+                    // Restore button state on API failure 
+                    buttonElement.disabled = originalDisabled; 
+                    buttonElement.innerHTML = originalHtml;     
+
+                    const errorBody = await response.json().catch(() => ({ detail: `Server returned status ${response.status} without detail.` }));
+                    const errorMessage = errorBody.detail || `Server returned status ${response.status}.`;
+                    
+                    // Specific handling for the 409 Conflict from the backend fix
+                    if (response.status === 409) {
+                        alert(`Order Status Conflict! The order was already completed. Refreshing order list.`);
+                    } else if (response.status === 404) {
+                        alert(`Order Not Found! The order may have been deleted or already completed. Refreshing.`);
+                    } else if (response.status === 503) {
+                         alert(`Service Unavailable! Order system (Redis) is down. Details: ${errorMessage}`);
+                    }
+                     else {
+                        alert(`Error updating status (HTTP ${response.status}). Details: ${errorMessage}`);
+                    }
+                    
+                    // Always refresh on error/conflict/404 to clear the UI
+                    fetchOrders(); 
+                    
+                    throw new Error(`Failed to update status. HTTP Status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log(`✅ Status Update Success. New Status: ${result.status}`);
+                
+                // 2. On SUCCESS: Re-fetch the list immediately (Prevent Race Condition 2)
+                fetchOrders(); 
+                
+            } catch (error) {
+                console.error('🚨 Error updating order status:', error);
+                
+                // If an error occurred (network, etc.), ensure the button is restored 
+                if (buttonElement && buttonElement.disabled) {
+                    buttonElement.disabled = originalDisabled;
+                    buttonElement.innerHTML = originalHtml;
+                }
+            }
+        }
+
+        /**
+         * Attaches click handlers to the status update buttons.
+         */
+        function attachStatusButtonListeners() {
+            document.querySelectorAll('.order-card button[data-id]:not([data-listener-attached]):not(:disabled)').forEach(button => {
+                button.setAttribute('data-listener-attached', 'true');
+                
+                button.addEventListener('click', (event) => {
+                    const orderId = event.currentTarget.getAttribute('data-id');
+                    const nextStatus = event.currentTarget.getAttribute('data-next-status');
+                    
+                    if (nextStatus && orderId && orderId.length > 0) {
+                        // Pass the button element for the disabling/loading state logic
+                        updateOrderStatus(orderId, nextStatus, event.currentTarget); 
+                    } else {
+                        // The button is disabled or missing data. This should only happen for 'ready'/'served' states now.
+                        console.warn('Button clicked but no valid next status/ID found or button disabled:', orderId, nextStatus);
+                    }
+                });
+            });
+        }
+
+        /**
+         * Filters the displayed orders based on the selected tab status.
+         */
+        function filterOrders(status) {
+            const orderCards = document.querySelectorAll('.order-card');
+            
+            let visibleCount = 0;
+            orderCards.forEach(card => {
+                const cardStatus = card.getAttribute('data-status');
+                
+                if (status === 'all' || cardStatus === status) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Fallback for an empty grid
+            const noOrdersMessage = orderGrid.querySelector('#no-orders-message');
+            if (visibleCount === 0) {
+                 if (!noOrdersMessage) {
+                     const message = document.createElement('p');
+                     message.id = 'no-orders-message';
+                     message.style.cssText = 'text-align: center; padding: 50px; color: var(--text-muted);';
+                     orderGrid.appendChild(message);
+                 }
+                 orderGrid.querySelector('#no-orders-message').textContent = `No ${status} orders found.`;
+            } else if (noOrdersMessage) {
+                noOrdersMessage.remove();
+            }
+        }
+
+        // Initial setup on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- User Info Display Logic ---
+            const userName = localStorage.getItem('userName');
+            const userPortal = localStorage.getItem('userPortal');
+            
+            const userNameDisplay = document.getElementById('user-name-display');
+            const userPortalDisplay = document.getElementById('user-portal-display');
+            
+            if (userName && userNameDisplay) {
+                userNameDisplay.textContent = userName.toUpperCase(); 
+            }
+            if (userPortal && userPortalDisplay) {
+                userPortalDisplay.textContent = userPortal.charAt(0).toUpperCase() + userPortal.slice(1);
+            }
+            
+            // --- Logout Redirection Logic ---
+            if (logoutButton) {
+                logoutButton.addEventListener('click', () => {
+                    localStorage.removeItem('userName'); 
+                    localStorage.removeItem('userPortal');
+                    window.location.href = '/'; 
+                });
+            }
+
+            // 1. Initial order fetch
+            fetchOrders(); 
+
+            // 2. Setup Tab Switching Logic
+            tabButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const status = event.currentTarget.getAttribute('data-status');
+                    
+                    // Update active tab styling
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    event.currentTarget.classList.add('active');
+
+                    filterOrders(status);
+                });
+            });
+
+            // 3. Auto-refresh for kitchen to see new orders
+            setInterval(fetchOrders, 10000); // Refresh every 10 seconds
+        });
+    </script>
+</body>
+</html>

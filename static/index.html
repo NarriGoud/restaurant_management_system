@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TablePay Portals Login</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="logo-section">
+            <div class="logo-image">
+                <span class="logo-icon"><i class="fas fa-utensils"></i></span>
+            </div>
+            <h1>TablePay</h1>
+            <p class="tagline">Smart Dining, Smarter Billing</p>
+        </header>
+
+        <section class="portal-selection">
+
+            <div class="mobile-tab-nav">
+                <button class="tab-btn active" data-portal="admin">Admin</button>
+                <button class="tab-btn" data-portal="cashier">Cashier</button>
+                <button class="tab-btn" data-portal="kitchen">Kitchen</button>
+            </div>
+            <div class="portal-card admin-card active-mobile-tab" id="admin-portal-card">
+                <div class="icon-header admin">
+                    <span class="icon">
+                        <i class="fas fa-user-shield"></i>
+                    </span>
+                </div>
+                <h2>Admin Portal</h2>
+                <p class="description">Full system access and management</p>
+
+                <div class="links">
+                    <a href="#" class="link-btn login-link">Login</a>
+                    </div>
+
+                <form class="login-form active" id="adminLoginForm">
+                    <label for="admin-email">Email</label>
+                    <input type="email" id="admin-email" name="email" placeholder="admin@tablepay.com" value="admin@tablepay.com" required>
+
+                    <label for="admin-password">Password</label>
+                    <input type="password" id="admin-password" name="password" placeholder="********" value="admin_pass" required>
+
+                    <button type="submit" class="login-button admin-button" data-portal="Admin">Login as Admin</button>
+                </form>
+            </div>
+
+            <div class="portal-card cashier-card" id="cashier-portal-card">
+                <div class="icon-header cashier">
+                    <span class="icon">
+                        <i class="fas fa-cash-register"></i>
+                    </span>
+                </div>
+                <h2>Cashier Portal</h2>
+                <p class="description">Billing and payment processing</p>
+
+                <div class="links">
+                    <a href="#" class="link-btn login-link">Login</a>
+                    </div>
+
+                <form class="login-form" id="cashierLoginForm">
+                    <label for="cashier-email">Email</label>
+                    <input type="email" id="cashier-email" name="email" placeholder="cashier@tablepay.com" value="cashier@tablepay.com" required>
+
+                    <label for="cashier-password">Password</label>
+                    <input type="password" id="cashier-password" name="password" placeholder="********" value="cashier_pass" required>
+
+                    <button type="submit" class="login-button cashier-button" data-portal="Cashier">Login as Cashier</button>
+                </form>
+            </div>
+
+            <div class="portal-card kitchen-card" id="kitchen-portal-card">
+                <div class="icon-header kitchen">
+                    <span class="icon">
+                        <i class="fas fa-utensils"></i>
+                    </span>
+                </div>
+                <h2>Kitchen Portal</h2>
+                <p class="description">Order management and preparation</p>
+
+                <div class="links">
+                    <a href="#" class="link-btn login-link">Login</a>
+                    </div>
+
+                <form class="login-form" id="kitchenLoginForm">
+                    <label for="kitchen-email">Email</label>
+                    <input type="email" id="kitchen-email" name="email" placeholder="kitchen@tablepay.com" value="kitchen@tablepay.com" required>
+
+                    <label for="kitchen-password">Password</label>
+                    <input type="password" id="kitchen-password" name="password" placeholder="********" value="kitchen_pass" required>
+
+                    <button type="submit" class="login-button kitchen-button" data-portal="Kitchen">Login as Kitchen</button>
+                </form>
+            </div>
+
+        </section>
+    </div>
+    <script src="/static/index.js"></script>
+</body>
+</html>

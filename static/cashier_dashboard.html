@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TablePay - Smart Dining, Smart Billing</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script> 
+    
+    <style>
+        /* --- 🎨 Color Variables & Reset (Default: Dark Mode) --- */
+        :root {
+            --dark-bg: #1e1e2d;
+            --main-dark: #2a2a3e;
+            --secondary-dark: #37374a;
+            --accent-orange: #f55f30; /* Original bright orange for dark mode */
+            --text-light: #ffffff;
+            --text-muted: #aaaaaa;
+            --border-color: #444466;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        /* --- ☀️ Light Mode Overrides (Updated Orange Contrast) --- */
+        .light-mode {
+            --dark-bg: #f4f4f4; /* Light background */
+            --main-dark: #ffffff; /* White card/section background */
+            --secondary-dark: #e0e0e0; /* Lighter input/secondary background */
+            --accent-orange: #ff8c59; /* NEW: Dimmer, softer orange for light mode */
+            --text-light: #1e1e2d; /* Dark text (Black/White) */
+            --text-muted: #555555; /* Darker muted text */
+            --border-color: #cccccc; /* Light border */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s; /* Smooth transition for theme change */
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.4;
+            display: block; 
+            min-height: 100vh;
+        }
+
+        /* --- 🖥️ Header Layout --- */
+        .header {
+            display: flex;
+            justify-content: space-around; 
+            align-items: center;
+            background-color: var(--dark-bg);
+            padding: 10px 20px;
+            position: sticky; 
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .light-mode .header {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-text h3 {
+            font-size: 1.1em;
+            margin: 0;
+            line-height: 1;
+        }
+        .logo-text p {
+            font-size: 0.7em;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* --- User Controls --- */
+        .user-controls {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+            gap: 15px; 
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 5px; 
+        }
+        
+        .user-info span {
+            font-weight: bold;
+        }
+
+        /* Icon Button styling (Mode Switch) */
+        .user-controls .icon-button {
+            background: none;
+            border: none;
+            color: var(--text-muted); /* Default: Muted color in Dark Mode */
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+        
+        /* Icon button color in Light Mode: Black (var(--text-light)) */
+        .light-mode .user-controls .icon-button {
+             color: var(--text-light);
+        }
+
+        /* Logout Button styling */
+        .logout-btn {
+            background-color: var(--accent-orange);
+            color: var(--text-light);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Gap between icon and text */
+        }
+        
+        /* --- 📐 Main Layout (2 Columns) --- */
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .menu-section {
+            flex: 2; 
+        }
+
+        .cart-section {
+            flex: 1; 
+            background-color: var(--main-dark);
+            border-radius: 6px;
+            padding: 20px;
+            min-width: 380px; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            position: sticky; 
+            top: 60px; 
+            height: fit-content; 
+            max-height: calc(100vh - 80px); 
+            display: flex;
+            flex-direction: column;
+        }
+        .light-mode .cart-section {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* --- Search Bar & Tabs --- */
+        .search-bar {
+            margin: 0 0 20px 0;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--secondary-dark);
+            color: var(--text-light);
+            font-size: 0.95em;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            overflow-x: auto;
+        }
+
+        .category-tab {
+            padding: 6px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            white-space: nowrap;
+            background-color: var(--secondary-dark);
+            color: var(--text-light);
+        }
+
+        .category-tab.active {
+            background-color: var(--accent-orange);
+            color: var(--text-light);
+        }
+
+        /* --- Menu Grid --- */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* === MENU ITEM LAYOUT: Image Left, Text Right === */
+        .menu-item {
+            display: flex;
+            align-items: stretch;
+            background-color: var(--main-dark);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            /* FIX: Enforce a fixed height for uniform card size */
+            height: 120px; 
+        }
+        .light-mode .menu-item {
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .menu-item-image {
+            width: 120px; 
+            min-width: 120px; 
+            /* FIX: Make image take 100% of the fixed parent height */
+            height: 100%; 
+            object-fit: cover;
+            filter: brightness(0.95);
+        }
+
+        .menu-item-info-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px; 
+            flex-grow: 1; 
+        }
+
+        .title-price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+
+        .menu-item-info-wrapper h4 {
+            font-size: 1.1em; 
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .menu-item-info-wrapper p {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            /* Important to keep height consistent: max-height/overflow is not needed 
+               if the card has a fixed height and the wrapper handles overflow */
+            margin-bottom: 10px;
+        }
+        
+        .price-tag {
+            font-weight: bold;
+            font-size: 1.2em; 
+            color: var(--accent-orange);
+            background: none;
+            padding: 0;
+        }
+        
+        .add-to-cart-btn {
+            width: 100%;
+            padding: 8px;
+            background-color: var(--accent-orange);
+            color: var(--text-light);
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            margin-top: auto; 
+        }
+        /* === END MENU ITEM LAYOUT === */
+
+        /* --- 🛒 Cart Section Spacing & Items --- */
+        .cart-header {
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+
+        .customer-details h4 {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            color: var(--text-muted);
+        }
+        
+        /* Cart Item Image & Layout */
+        .cart-item {
+            padding: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px; 
+            border-bottom: 1px dashed var(--border-color);
+        }
+        
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .cart-item-img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 4px;
+            background-color: var(--secondary-dark);
+            flex-shrink: 0;
+        }
+
+        .item-info { 
+            flex-grow: 1; 
+        }
+
+        .detail-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .detail-input-group {
+            flex: 1;
+        }
+
+        .detail-input-group label {
+            display: block;
+            font-size: 0.7em;
+            color: var(--text-muted);
+            margin-bottom: 3px;
+        }
+
+        .detail-input-group input {
+            width: 100%;
+            padding: 6px;
+            background-color: var(--secondary-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-light);
+            font-size: 0.9em;
+        }
+
+        /* Cart Items List */
+        .cart-items {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+            max-height: 200px; 
+            overflow-y: auto;
+        }
+        
+        .item-info h5 {
+            font-size: 0.9em;
+            margin: 0;
+        }
+
+        .item-info p {
+            font-size: 0.7em;
+            color: var(--text-muted);
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+
+        .quantity-control button {
+            background-color: var(--secondary-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            padding: 4px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            line-height: 1;
+            font-size: 0.8em;
+        }
+
+        .quantity-control span.qty {
+            padding: 0 8px;
+            min-width: 20px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .cart-item-price {
+            font-weight: bold;
+            min-width: 45px;
+            text-align: right;
+            font-size: 0.9em;
+            flex-shrink: 0;
+        }
+        
+        /* Discount/Charge Input */
+        .discount-charge {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .discount-charge .input-group {
+            flex: 1;
+        }
+
+        .discount-charge .input-group input {
+            width: 100%;
+            padding: 6px;
+            background-color: var(--secondary-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-light);
+            text-align: right;
+            font-size: 0.9em;
+        }
+
+        /* Billing Summary */
+        .billing-summary {
+            margin-top: 15px; 
+            margin-bottom: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color); 
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            font-size: 0.9em;
+        }
+
+        .summary-row.total {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--accent-orange);
+            padding-top: 10px;
+            margin-top: 10px;
+            border-top: 1px dotted var(--border-color); 
+        }
+
+        /* Footer/Action Buttons */
+        .cart-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 0; 
+        }
+
+        .clear-btn {
+            flex: 1;
+            padding: 10px;
+            background-color: var(--secondary-dark);
+            color: var(--accent-orange);
+            border: 1px solid var(--accent-orange);
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
+
+        .checkout-btn {
+            flex: 2;
+            padding: 10px;
+            background-color: var(--accent-orange);
+            color: var(--text-light);
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
+
+        /* =================================== */
+        /* BILL MODAL STYLES                   */
+        /* =================================== */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+            padding-top: 50px;
+        }
+
+        .modal-content {
+            background-color: var(--main-dark);
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content h2 {
+            text-align: center;
+            color: var(--accent-orange);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .close-button {
+            color: var(--text-muted);
+            float: right;
+            font-size: 36px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        #bill-item-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        #bill-item-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        
+        #bill-summary-totals p {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            color: var(--text-muted);
+        }
+        
+        .grand-total-display {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-light);
+            font-size: 1.5em;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 2px solid var(--accent-orange);
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            gap: 10px;
+        }
+        
+        .payment-modes {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        .payment-mode-btn {
+            flex: 1;
+            background-color: var(--secondary-dark);
+            border: 2px solid var(--border-color);
+            padding: 15px;
+            transition: all 0.2s;
+            color: var(--text-light); 
+        }
+        .payment-mode-btn.selected {
+            background-color: var(--accent-orange);
+            border-color: var(--text-light);
+            box-shadow: 0 0 10px rgba(245, 95, 48, 0.5);
+        }
+        
+        /* --------------------------------- */
+        /* FIX: Action Button Styles Added */
+        /* --------------------------------- */
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s, opacity 0.2s, color 0.2s;
+        }
+
+        .action-btn.accent-orange-bg {
+            background-color: var(--accent-orange);
+            color: var(--text-light);
+        }
+
+        .action-btn.secondary-dark-bg {
+            background-color: var(--secondary-dark);
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+        }
+        
+        .action-btn.accent-orange-bg:hover {
+            opacity: 0.9;
+        }
+
+        /* Hover states for secondary button */
+        .action-btn.secondary-dark-bg:hover {
+            background-color: #4a4a60; 
+        }
+        .light-mode .action-btn.secondary-dark-bg:hover {
+            background-color: #d0d0d0; 
+        }
+        /* --------------------------------- */
+
+
+        /* =================================== */
+        /* RESPONSIVENESS (CSS Media Queries)  */
+        /* =================================== */
+
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                padding: 15px; 
+                gap: 30px; 
+            }
+            
+            .menu-section {
+                order: 1; 
+            }
+            
+            .cart-section {
+                position: static; 
+                min-width: auto;
+                max-height: none; 
+                order: 2; 
+            }
+
+            .menu-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 10px 15px;
+            }
+            
+            .user-controls {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 10px;
+                padding-top: 5px;
+                border-top: 1px solid var(--secondary-dark);
+            }
+            
+            .user-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0;
+            }
+            
+            .user-controls .icon-button {
+                margin-left: auto; 
+            }
+
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-items {
+                max-height: 150px; 
+            }
+            
+            .menu-item-image {
+                width: 100px; 
+                min-width: 100px;
+            }
+            
+            .modal-footer {
+                flex-direction: column;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-area">
+            <span class="logo-icon" style="background-color: var(--accent-orange); width: 30px; height: 30px; text-align: center; line-height: 30px; border-radius: 4px;"><i class="fas fa-cash-register"></i></span>
+            <div class="logo-text">
+                <h3>TablePay</h3>
+                <p>Smart Dining, Smart Billing</p>
+            </div>
+        </div>
+        <div class="user-controls">
+            <div class="user-info">
+                <span id="user-name-display">CASHIER</span>
+                <span id="user-portal-display" style="color: var(--text-muted); font-weight: normal;">Cashier</span>
+            </div>
+            <button class="icon-button" id="modeSwitchBtn">
+                <i class="fas fa-moon" id="modeIcon"></i>
+            </button>
+            <button class="logout-btn" id="logoutButton">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button> 
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="menu-section">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search menu...">
+            </div>
+
+            <div class="category-tabs" id="category-tabs">
+                </div>
+
+            <div class="menu-grid" id="menu-grid">
+                </div>
+        </div>
+
+        <div class="cart-section">
+            <div class="cart-header">
+                <h3>Cart & Billing</h3>
+                <p style="font-size: 0.8em; color: var(--text-muted);">Review your order and checkout</p>
+            </div>
+            
+            <div class="customer-details">
+                <h4>Customer Details</h4>
+                <div class="detail-row">
+                    <div class="detail-input-group" style="flex: 2;">
+                        <label for="customer-name">Name</label>
+                        <input type="text" id="customer-name" placeholder="Customer name">
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-input-group">
+                        <label for="table-no">Table No.</label>
+                        <input type="text" id="table-no" placeholder="Table">
+                    </div>
+                    <div class="detail-input-group">
+                        <label for="contact-phone">Contact</label>
+                        <input type="text" id="contact-phone" placeholder="Phone">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="discount-charge">
+                <div class="input-group">
+                    <label for="discount">Discount (%)</label>
+                    <input type="number" id="discount" value="0">
+                </div>
+                <div class="input-group">
+                    <label for="service-charge">Service Charge (%)</label>
+                    <input type="number" id="service-charge" value="5">
+                </div>
+            </div>
+
+            <div class="cart-items" id="cart-items-list">
+                </div>
+
+            <div class="billing-summary">
+                <div class="summary-row">
+                    <span class="label">Subtotal</span>
+                    <span class="value" id="subtotal-value">₹0.00</span>
+                </div>
+                <div class="summary-row">
+                    <span class="label">Tax (5% GST)</span>
+                    <span class="value" id="tax-value">₹0.00</span>
+                </div>
+                <div class="summary-row">
+                    <span class="label">Service Charge (5%)</span>
+                    <span class="value" id="service-charge-value">₹0.00</span>
+                </div>
+                <div class="summary-row total">
+                    <span class="label">Grand Total</span>
+                    <span class="value" id="grand-total-value">₹0.00</span>
+                </div>
+            </div>
+
+            <div class="cart-footer">
+                <button class="clear-btn">Clear</button>
+                <button class="checkout-btn" id="checkout-btn">Checkout</button>
+            </div>
+
+        </div>
+    </div>
+    
+    <div id="bill-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeBillModal()">&times;</span>
+            
+            <div id="bill-details-content">
+                <h2 style="margin-bottom: 20px;">TablePay 🧾 Final Bill</h2>
+
+                <p><strong>Order ID:</strong> <span id="bill-order-id">N/A</span></p>
+                <p><strong>Customer:</strong> <span id="bill-customer-name">N/A</span></p>
+                <p><strong>Table No:</strong> <span id="bill-table-no">N/A</span></p>
+                <hr style="border-color: var(--border-color);">
+
+                <h3>Order Items:</h3>
+                <ul id="bill-item-list">
+                    </ul>
+                <hr style="border-color: var(--border-color);">
+                
+                <div id="bill-summary-totals">
+                    </div>
+                
+                <hr style="border-color: var(--accent-orange); margin-top: 20px;">
+                <p style="font-size: 1.1em;"><strong>Payment Mode:</strong> <span id="bill-payment-mode" style="font-weight: bold; color: var(--accent-orange);">CASH</span></p>
+
+            </div>
+            
+            <h3 style="margin-top: 20px;">Select Payment Mode:</h3>
+            <div class="payment-modes">
+                <button class="payment-mode-btn selected" id="mode-cash" onclick="selectPaymentMode('Cash')">
+                    <i class="fas fa-money-bill-wave"></i> Cash
+                </button>
+                <button class="payment-mode-btn" id="mode-upi" onclick="selectPaymentMode('UPI')">
+                    <i class="fas fa-qrcode"></i> UPI / Scan
+                </button>
+            </div>
+
+            <div id="upi-qr-display" style="display: none; text-align: center; padding: 15px; border: 1px dashed var(--accent-orange); border-radius: 5px; margin-bottom: 20px;">
+                <p style="color: var(--text-light); font-weight: bold;">Scan to Pay Total Amount: <span id="upi-total-amount">₹0.00</span></p>
+                <div id="qrcode-container" style="width: 150px; height: 150px; background-color: white; margin: 10px auto; display: flex; align-items: center; justify-content: center; border-radius: 5px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 30px; color: #3b5998;"></i> </div>
+                <p style="font-size: 0.9em; color: var(--text-muted);">UPI ID: <strong>narendra.sai9@ybl</strong></p>
+            </div>
+
+
+            <div class="modal-footer">
+                <button id="print-bill-btn" class="action-btn secondary-dark-bg"><i class="fas fa-print"></i> Download PDF Bill</button>
+                <button id="complete-payment-btn" class="action-btn accent-orange-bg">Confirm Cash Payment</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const menuGrid = document.getElementById('menu-grid');
+        const cartItemsList = document.getElementById('cart-items-list');
+        const subtotalEl = document.getElementById('subtotal-value');
+        const taxEl = document.getElementById('tax-value');
+        const serviceChargeEl = document.getElementById('service-charge-value');
+        const grandTotalEl = document.getElementById('grand-total-value');
+        const discountInput = document.getElementById('discount');
+        const serviceChargeInput = document.getElementById('service-charge');
+        const logoutButton = document.getElementById('logoutButton');
+        const clearButton = document.querySelector('.clear-btn'); 
+        const customerNameInput = document.getElementById('customer-name'); 
+        const tableNoInput = document.getElementById('table-no'); 
+        const contactPhoneInput = document.getElementById('contact-phone'); 
+        const categoryTabs = document.getElementById('category-tabs');
+        
+        // --- Mode Switch Elements ---
+        const modeSwitchBtn = document.getElementById('modeSwitchBtn');
+        const modeIcon = document.getElementById('modeIcon'); 
+        const body = document.body;
+
+        // --- UPI VPA Constant ---
+        const UPI_VPA = 'narendra.sai9@ybl';
+        // -------------------------------------
+        // --- DYNAMIC DATA LOGIC (CACHED MENU) ---
+        // -------------------------------------
+        
+        let menuData = []; 
+        const API_URL = '/api/menu'; 
+
+        /**
+         * Fetches real menu data from the FastAPI API (which serves from Redis cache).
+         */
+        async function fetchMenuData() {
+            menuGrid.innerHTML = '<p id="loadingMessage" style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">Loading menu items...</p>';
+            const currentLoadingMessage = document.getElementById('loadingMessage');
+            
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const rawItems = await response.json();
+                
+                // Map the data structure from the FastAPI response (MongoDB _id) 
+                menuData = rawItems.map(item => ({
+                    // Handle Pydantic's serialization of ObjectId
+                    id: (item._id && item._id.$oid) ? item._id.$oid : item._id || item.id, 
+                    name: item.name,
+                    price: parseFloat(item.price), 
+                    category: item.category,
+                    description: item.description || 'Delicious food item',
+                    // Create a simple image name for cart placeholder fallback (e.g., "hot-coffee")
+                    imageName: item.name.toLowerCase().replace(/\s/g, '-'), 
+                    // Use the actual image URL or a fallback
+                    menuImageUrl: item.menuImageUrl || `https://via.placeholder.com/120x120/2a2a3e/ffffff?text=${encodeURIComponent(item.name)}`
+                }));
+
+                console.log(`Successfully loaded ${menuData.length} menu items from cache API.`);
+                
+                if (currentLoadingMessage) currentLoadingMessage.remove(); 
+
+                // Initial render using fetched data
+                renderCategories();
+                renderMenu(); 
+
+            } catch (error) {
+                console.error('Failed to fetch menu data:', error);
+                if (currentLoadingMessage) currentLoadingMessage.textContent = 'Failed to load menu items. Check server status or API endpoint.';
+                menuData = []; 
+                renderCategories(); 
+                renderMenu(); 
+            }
+        }
+        
+        // -------------------------------------
+
+        // 🟢 Global Cart Array
+        let currentCart = []; 
+        // 🟢 Global variable to cache the last calculated totals (NEW)
+        let lastCalculatedTotals = null; 
+        // ⭐ NEW GLOBAL: Stores the generated Order ID during checkout
+        let currentOrderId = null; 
+        // ⭐ FIX: Define tableId globally to avoid ReferenceError. MUST be updated dynamically!
+        const tableId = "Table-01"; 
+
+        // --- Helper Functions ---
+        const formatCurrency = (amount) => `₹${Number(amount).toFixed(2)}`;
+        
+        const generateCartImageUrl = (imageName) => {
+            // Using first letter for placeholder
+            const text = imageName.charAt(0).toUpperCase() || 'I'; 
+            return `https://via.placeholder.com/40x40/f55f30/ffffff?text=${text}`;
+        };
+
+        /**
+         * FIX: Function to extract and format cart items for the FastAPI API.
+         * This function converts the local `currentCart` structure to the `items`
+         * list required by the `/api/orders/complete` endpoint.
+         */
+        function getCartItemsForAPI() {
+            return currentCart.map(item => ({
+                // API only needs name, price, quantity, as order creation links them
+                name: item.name,
+                quantity: item.qty,
+                price: item.price 
+            }));
+        }
+
+
+        function renderMenu(filterCategory = 'All') {
+            menuGrid.innerHTML = '';
+            
+            const filteredItems = filterCategory === 'All' 
+                ? menuData 
+                : menuData.filter(item => item.category === filterCategory);
+                
+            if (filteredItems.length === 0) {
+                 menuGrid.innerHTML = `<p style="grid-column: 1 / -1; color: var(--text-muted); text-align: center;">No items found in this category or menu is empty.</p>`;
+                 return;
+            }
+
+
+            filteredItems.forEach(item => {
+                const menuItemHTML = `
+                    <div class="menu-item" data-id="${item.id}" data-category="${item.category}" data-price-val="${item.price}" data-image="${item.imageName}">
+                        <img src="${item.menuImageUrl}" alt="${item.name}" class="menu-item-image">
+                        <div class="menu-item-info-wrapper">
+                            <div class="title-price-row">
+                                <h4>${item.name}</h4>
+                                <div class="price-tag">${formatCurrency(item.price)}</div>
+                            </div>
+                            <p>${item.description}</p>
+                        </div>
+                        <button class="add-to-cart-btn" data-id="${item.id}"><i class="fas fa-plus"></i> Add to Cart</button>
+                    </div>
+                `;
+                menuGrid.insertAdjacentHTML('beforeend', menuItemHTML);
+            });
+        }
+        
+        function renderCategories() {
+            // Use the updated global menuData
+            const categories = ['All', ...new Set(menuData.map(item => item.category))];
+            
+            categoryTabs.innerHTML = '';
+            
+            categories.forEach((category, index) => {
+                const tabHTML = `
+                    <div class="category-tab ${index === 0 ? 'active' : ''}" data-category="${category}">${category}</div>
+                `;
+                categoryTabs.insertAdjacentHTML('beforeend', tabHTML);
+            });
+        }
+
+        function renderCartItem(item) {
+             return `
+                <div class="cart-item" data-item-id="${item.id}" data-price="${item.price}" data-image="${item.imageName}">
+                    <img src="${generateCartImageUrl(item.imageName)}" alt="${item.name}" class="cart-item-img">
+                    <div class="item-info">
+                        <h5>${item.name}</h5>
+                        <p>${formatCurrency(item.price)} each</p>
+                    </div>
+                    <div class="quantity-control">
+                        <button class="qty-btn minus" data-id="${item.id}">-</button>
+                        <span class="qty" data-id="${item.id}">${item.qty}</span>
+                        <button class="qty-btn plus" data-id="${item.id}">+</button>
+                    </div>
+                    <div class="cart-item-price" data-total-id="${item.id}">${formatCurrency(item.qty * item.price)}</div>
+                </div>
+            `;
+        }
+
+        function renderCart() {
+            cartItemsList.innerHTML = currentCart.map(renderCartItem).join('');
+            if (currentCart.length === 0) {
+                 cartItemsList.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 20px 0;">Cart is empty. Add items from the menu.</p>`;
+            }
+            calculateTotal();
+        }
+
+        function calculateTotal() {
+            let subtotal = currentCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            
+            const discountPercent = parseFloat(discountInput.value) || 0;
+            const discountAmount = subtotal * (discountPercent / 100);
+            let totalAfterDiscount = subtotal - discountAmount;
+            
+            const taxRate = 0.05; 
+            const taxAmount = totalAfterDiscount * taxRate;
+
+            const serviceChargePercent = parseFloat(serviceChargeInput.value) || 0;
+            const serviceChargeAmount = totalAfterDiscount * (serviceChargePercent / 100);
+            
+            const grandTotal = totalAfterDiscount + taxAmount + serviceChargeAmount;
+
+            // Update DOM
+            subtotalEl.textContent = formatCurrency(subtotal);
+            taxEl.textContent = formatCurrency(taxAmount);
+            serviceChargeEl.textContent = formatCurrency(serviceChargeAmount);
+            grandTotalEl.textContent = formatCurrency(grandTotal);
+        }
+
+        function updateQuantity(itemId, change) {
+            // NOTE: Use == for comparison as itemId is now a string (ObjectId)
+            const item = currentCart.find(i => i.id == itemId); 
+            if (!item) return;
+
+            item.qty += change;
+
+            if (item.qty <= 0) {
+                currentCart = currentCart.filter(i => i.id != itemId);
+                document.querySelector(`.cart-item[data-item-id="${itemId}"]`)?.remove();
+            } else {
+                const qtyEl = document.querySelector(`.qty[data-id="${itemId}"]`);
+                const totalEl = document.querySelector(`.cart-item-price[data-total-id="${itemId}"]`);
+                if (qtyEl) qtyEl.textContent = item.qty;
+                if (totalEl) totalEl.textContent = formatCurrency(item.qty * item.price);
+            }
+
+            renderCart(); // Call renderCart to handle empty state and recalculate
+        }
+
+        function clearCart() {
+            // 1. Reset global cart state
+            currentCart = [];
+
+            // 2. Clear cart items from DOM
+            cartItemsList.innerHTML = '';
+
+            // 3. Reset customer details
+            customerNameInput.value = '';
+            tableNoInput.value = '';
+            contactPhoneInput.value = '';
+
+            // 4. Reset Discount and Service Charge inputs
+            discountInput.value = '0';
+            serviceChargeInput.value = '5'; 
+
+            // 5. Recalculate and update billing summary (should result in 0.00)
+            renderCart();
+        }
+
+
+        // --- Theme Switching Functions (UPDATED: Icon toggle logic) ---
+        function enableLightMode() {
+            body.classList.add('light-mode');
+            modeIcon.classList.remove('fa-moon');
+            modeIcon.classList.add('fa-sun');
+            localStorage.setItem('colorMode', 'light');
+        }
+
+        function disableLightMode() {
+            body.classList.remove('light-mode');
+            modeIcon.classList.remove('fa-sun');
+            modeIcon.classList.add('fa-moon');
+            localStorage.setItem('colorMode', 'dark');
+        }
+        
+        // --- Event Delegation for Dynamic Menu Buttons ---
+        menuGrid.addEventListener('click', (e) => {
+            const button = e.target.closest('.add-to-cart-btn');
+            if (!button) return;
+
+            // Item ID is a string (MongoDB ObjectId)
+            const itemId = button.dataset.id; 
+            
+            // Find item in the globally populated menuData array
+            const menuItemData = menuData.find(item => item.id == itemId);
+            
+            if (!menuItemData) return;
+
+            const existingItem = currentCart.find(i => i.id == itemId); 
+
+            if (existingItem) {
+                updateQuantity(itemId, 1);
+            } else {
+                const newItem = { 
+                    id: itemId, 
+                    name: menuItemData.name, 
+                    price: menuItemData.price, 
+                    qty: 1, 
+                    imageName: menuItemData.imageName 
+                };
+                currentCart.push(newItem);
+                
+                renderCart();
+            }
+        });
+
+        // --- Event Listeners ---
+        logoutButton.addEventListener('click', () => {
+             // Clear user info on logout (Essential for proper login check on next session)
+            localStorage.removeItem('userName'); 
+            localStorage.removeItem('userPortal');
+            window.location.href = '/'; 
+        });
+        
+        // Mode Switch Listener
+        if (modeSwitchBtn) {
+            modeSwitchBtn.addEventListener('click', () => {
+                if (body.classList.contains('light-mode')) {
+                    disableLightMode();
+                } else {
+                    enableLightMode();
+                }
+            });
+        }
+
+        // Cart quantity buttons listener
+        cartItemsList.addEventListener('click', (e) => {
+            const btn = e.target.closest('.qty-btn');
+            if (!btn) return;
+
+            // Item ID is a string (ObjectId)
+            const itemId = btn.dataset.id;
+            if (btn.classList.contains('plus')) {
+                updateQuantity(itemId, 1);
+            } else if (btn.classList.contains('minus')) {
+                updateQuantity(itemId, -1);
+            }
+        });
+
+        discountInput.addEventListener('input', calculateTotal);
+        serviceChargeInput.addEventListener('input', calculateTotal);
+        
+        // Clear button listener
+        if (clearButton) {
+            clearButton.addEventListener('click', clearCart);
+        }
+        
+        // Category filtering (event delegation)
+        categoryTabs.addEventListener('click', (e) => {
+            const tab = e.target.closest('.category-tab');
+            if (!tab) return;
+            
+            // Update active state
+            document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // Render menu with filter
+            renderMenu(tab.dataset.category);
+        });
+        
+        // =============================================
+        // 🟢 BILLING SYSTEM LOGIC 
+        // =============================================
+        
+        let selectedPaymentMode = 'Cash';
+
+        /**
+         * Unified Total Calculation Logic for the Bill Modal.
+         */
+        function calculateBillTotals(cart, discountRate, serviceChargeRate) {
+            let subtotal = 0;
+            cart.forEach(item => { subtotal += item.price * item.qty; });
+
+            const discountAmount = subtotal * (discountRate / 100);
+            const totalAfterDiscount = subtotal - discountAmount;
+
+            const taxRate = 5; // Fixed Tax Rate (e.g., GST 5%)
+            const taxAmount = totalAfterDiscount * (taxRate / 100);
+
+            const serviceChargeAmount = totalAfterDiscount * (serviceChargeRate / 100);
+
+            const grandTotal = totalAfterDiscount + taxAmount + serviceChargeAmount;
+
+            return {
+                subtotal: subtotal.toFixed(2),
+                discountRate: discountRate,
+                discountAmount: discountAmount.toFixed(2),
+                taxRate: taxRate,
+                taxAmount: taxAmount.toFixed(2),
+                serviceChargeRate: serviceChargeRate,
+                serviceChargeAmount: serviceChargeAmount.toFixed(2),
+                grandTotal: grandTotal.toFixed(2)
+            };
+        }
+
+        function closeBillModal() {
+            document.getElementById('bill-modal').style.display = 'none';
+        }
+
+        /**
+         * Generates and displays the QR code for UPI payment. (FIXED UPI INTENT URL)
+         * @param {string} amount - The grand total amount as a string or number.
+         */
+        function generateQrCode(amount) {
+            // FIX: Ensure amount is correctly formatted to 2 decimals
+            const fixedAmount = Number(amount).toFixed(2);
+            
+            // Standard UPI Payment Intent URL structure for maximum compatibility
+            const qrText = `upi://pay?pa=${UPI_VPA}&pn=TablePay&am=${fixedAmount}&cu=INR`;
+            
+            const container = document.getElementById('qrcode-container');
+            if (!container) return;
+            container.innerHTML = ''; // Clear the container 
+            
+            if (typeof QRCode === 'undefined') {
+                console.error("QRCode library (qrcode.js) not loaded. Cannot generate QR.");
+                container.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size: 30px; color: #f55f30;"></i>';
+                return;
+            }
+            
+            new QRCode(container, {
+                text: qrText,
+                width: 150,
+                height: 150,
+                colorDark : "#000000", // Must be black for scanning
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+
+
+        /**
+         * Updates the selected payment mode and handles QR code display logic. (MODIFIED)
+         * @param {string} mode - 'Cash' or 'UPI'.
+         * @param {string} [currentGrandTotal=null] - The total amount for QR code generation.
+         */
+        function selectPaymentMode(mode, currentGrandTotal = null) {
+            selectedPaymentMode = mode;
+            const qrDisplay = document.getElementById('upi-qr-display');
+            const qrContainer = document.getElementById('qrcode-container'); 
+            const completeBtn = document.getElementById('complete-payment-btn');
+            const printBtn = document.getElementById('print-bill-btn');
+
+            document.querySelectorAll('.payment-mode-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+
+            document.getElementById(`mode-${mode.toLowerCase()}`).classList.add('selected');
+            
+            document.getElementById('bill-payment-mode').textContent = mode.toUpperCase();
+
+            
+            // Use the passed total or the globally cached one if available
+            const totalAmount = currentGrandTotal || (lastCalculatedTotals ? lastCalculatedTotals.grandTotal : '0.00');
+
+            if (mode === 'Cash') {
+                completeBtn.textContent = 'Confirm Cash Payment';
+                completeBtn.classList.remove('accent-orange-bg');
+                completeBtn.classList.add('secondary-dark-bg');
+                printBtn.classList.remove('secondary-dark-bg');
+                printBtn.classList.add('accent-orange-bg');
+                qrDisplay.style.display = 'none'; 
+                if (qrContainer) qrContainer.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 30px; color: #3b5998;"></i>'; // Reset spinner
+            } else if (mode === 'UPI') {
+                completeBtn.textContent = 'Awaiting UPI Payment';
+                completeBtn.classList.remove('secondary-dark-bg');
+                completeBtn.classList.add('accent-orange-bg');
+                printBtn.classList.remove('accent-orange-bg');
+                printBtn.classList.add('secondary-dark-bg');
+                qrDisplay.style.display = 'block'; 
+
+                // Generate QR code dynamically
+                document.getElementById('upi-total-amount').textContent = formatCurrency(totalAmount);
+                generateQrCode(totalAmount);
+            }
+        }
+
+        /**
+         * Core Bill Generation Logic: Triggered by Checkout Button. (MODIFIED)
+         */
+        function generateBill() {
+            // 🚨 DEBUGGING ALERT: Check if this alert fires when clicking Checkout
+            console.log("generateBill function called."); 
+            
+            if (currentCart.length === 0) {
+                alert("The cart is empty. Please add items before checking out.");
+                return;
+            }
+            
+            // 1. Get current input values from the dashboard
+            const customerName = customerNameInput.value || 'Guest';
+            const tableNo = tableNoInput.value || 'N/A';
+            const discountInputVal = parseFloat(discountInput.value) || 0;
+            const serviceChargeInputVal = parseFloat(serviceChargeInput.value) || 0;
+
+            // 2. Calculate totals using the self-contained function
+            const totals = calculateBillTotals(currentCart, discountInputVal, serviceChargeInputVal); 
+            lastCalculatedTotals = totals; // 🟢 CACHE THE TOTALS
+            
+            // 3. Generate Mock Order ID
+            const orderId = 'ORD-' + Date.now().toString().slice(-8) + Math.floor(Math.random() * 100);
+            
+            // ⭐ NEW: Store the generated ID globally
+            currentOrderId = orderId; 
+
+            // 4. Populate Bill Modal Header
+            document.getElementById('bill-order-id').textContent = orderId;
+            document.getElementById('bill-customer-name').textContent = customerName;
+            document.getElementById('bill-table-no').textContent = tableNo;
+
+            // 5. Populate Item List
+            const billItemList = document.getElementById('bill-item-list');
+            billItemList.innerHTML = ''; 
+
+            currentCart.forEach(item => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${item.qty} x ${item.name}</span>
+                    <span style="font-weight: bold;">${formatCurrency(item.price * item.qty)}</span>
+                `;
+                billItemList.appendChild(li);
+            });
+
+            // 6. Populate Final Summary Totals
+            const summaryDiv = document.getElementById('bill-summary-totals');
+            summaryDiv.innerHTML = `
+                <p><span>Subtotal:</span> <span>${formatCurrency(totals.subtotal)}</span></p>
+                <p><span>Discount (${discountInputVal}%):</span> <span>-${formatCurrency(totals.discountAmount)}</span></p>
+                <hr style="border-color: var(--border-color);">
+                <p><span>Tax (GST ${totals.taxRate}%):</span> <span>+${formatCurrency(totals.taxAmount)}</span></p>
+                <p><span>Service Charge (${serviceChargeInputVal}%):</span> <span>+${formatCurrency(totals.serviceChargeAmount)}</span></p>
+                <div class="grand-total-display">
+                    <span>Grand Total:</span>
+                    <span>${formatCurrency(totals.grandTotal)}</span>
+                </div>
+            `;
+            
+            // 7. Handled by selectPaymentMode
+
+            // 8. Ensure payment mode is correct and display modal
+            // Reset to Cash by default when opening bill (a standard POS flow)
+            selectPaymentMode('Cash', totals.grandTotal); 
+            document.getElementById('bill-modal').style.display = 'block';
+        }
+
+
+        // --- PDF Generation Logic ---
+        function downloadBillAsPDF() {
+            const input = document.getElementById('bill-details-content');
+            const modalContent = document.querySelector('.modal-content');
+            
+            // 1. Hide unwanted elements (buttons, selection areas) and save original styles
+            const elementsToHide = ['.close-button', '.modal-footer', '.payment-modes', '#upi-qr-display'];
+            const originalDisplays = {};
+            elementsToHide.forEach(selector => {
+                const el = document.querySelector(selector);
+                if (el) {
+                    originalDisplays[selector] = el.style.display;
+                    el.style.display = 'none';
+                }
+            });
+            
+            // 2. Temporarily apply high-contrast styling for PDF readability (Black on White)
+            const elementsToRecolor = document.querySelectorAll('.modal-content h2, #bill-item-list li span, #bill-summary-totals p span, .grand-total-display, #bill-payment-mode, #bill-details-content p strong');
+            const originalStyles = {
+                modalBg: modalContent.style.backgroundColor,
+                modalColor: modalContent.style.color,
+            };
+
+            // Apply high contrast styles for conversion
+            modalContent.style.backgroundColor = '#ffffff'; 
+            modalContent.style.color = '#000000';         
+            elementsToRecolor.forEach(el => {
+                el.dataset.originalColor = el.style.color; 
+                el.style.color = '#000000';
+            });
+            
+            // Fix the horizontal rule colors for PDF
+            document.querySelectorAll('#bill-details-content hr').forEach(hr => {
+                hr.dataset.originalBorderColor = hr.style.borderColor;
+                hr.style.borderColor = '#cccccc';
+            });
+
+
+            // 3. Use html2canvas to render the HTML element to a canvas (image)
+            html2canvas(input, { 
+                scale: 2, 
+                backgroundColor: '#ffffff'
+            })
+            .then((canvas) => {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4'); 
+                
+                const imgData = canvas.toDataURL('image/png');
+                
+                const imgWidth = 190; 
+                const pageHeight = 297; 
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                let heightLeft = imgHeight;
+
+                let position = 10; 
+
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight + 10;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                // Use Order ID in the file name
+                const orderId = document.getElementById('bill-order-id').textContent.replace('ORD-', '');
+                pdf.save(`TablePay_Bill_ORD_${orderId}.pdf`);
+            })
+            .finally(() => {
+                // 4. Restore the original styles and visibility
+                elementsToHide.forEach(selector => {
+                    const el = document.querySelector(selector);
+                    if (el) {
+                        el.style.display = originalDisplays[selector];
+                    }
+                });
+                
+                // Restore original color/background
+                modalContent.style.backgroundColor = originalStyles.modalBg;
+                modalContent.style.color = originalStyles.modalColor;
+                
+                // Restore text colors and border colors
+                elementsToRecolor.forEach(el => {
+                    el.style.color = el.dataset.originalColor || '';
+                    delete el.dataset.originalColor;
+                });
+                
+                document.querySelectorAll('#bill-details-content hr').forEach(hr => {
+                    hr.style.borderColor = hr.dataset.originalBorderColor || '';
+                    delete hr.dataset.originalBorderColor;
+                });
+            });
+        }
+        
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for saved theme preference
+            const savedMode = localStorage.getItem('colorMode');
+            if (savedMode === 'light') {
+                enableLightMode();
+            } else {
+                disableLightMode(); 
+            }
+            
+            // === Display User Info from localStorage (Cashier) ===
+            const userName = localStorage.getItem('userName');
+            const userPortal = localStorage.getItem('userPortal');
+            
+            const userNameDisplay = document.getElementById('user-name-display');
+            const userPortalDisplay = document.getElementById('user-portal-display');
+            
+            if (userName && userNameDisplay) {
+                // Display name in uppercase as per the style of the dashboard
+                userNameDisplay.textContent = userName.toUpperCase(); 
+            }
+            // The portal span should display the portal name if available, otherwise default to 'Cashier'
+            if (userPortal && userPortalDisplay) {
+                userPortalDisplay.textContent = userPortal.charAt(0).toUpperCase() + userPortal.slice(1);
+            }
+            // === END Display User Info ===
+
+            // Fetch real data from Redis/DB via API
+            fetchMenuData(); 
+            
+            // Initial cart render
+            renderCart(); 
+        });
+
+        // ========================================================
+        // 🟢 Robust Event Listeners (Placed here for guaranteed DOM access)
+        // ========================================================
+
+        // 1. Connect the Main Checkout Button to open the Bill Modal
+        const checkoutBtn = document.getElementById('checkout-btn');
+        if (checkoutBtn) {
+            checkoutBtn.addEventListener('click', generateBill);
+        } else {
+            console.error("Checkout button (id='checkout-btn') not found in DOM.");
+        }
+
+
+        // 2. Connect the PDF download button inside the modal
+        const printBillBtn = document.getElementById('print-bill-btn');
+        if (printBillBtn) {
+            printBillBtn.addEventListener('click', downloadBillAsPDF);
+        }
+
+        // 3. Connect the Complete Payment button (handles final logic)
+        const completePaymentBtn = document.getElementById('complete-payment-btn');
+            if (completePaymentBtn) {
+                // **IMPORTANT: The listener is now ASYNCHRONOUS to handle the fetch request.**
+                completePaymentBtn.addEventListener('click', async () => { 
+                    
+                    // --- FIXES START HERE: Locally define the required inputs and values ---
+                    
+                    // Retrieve the value from the main table number input field ('table-no')
+                    // We must fetch the element now to ensure we have the latest value
+                    const tableNoInput = document.getElementById('table-no');
+                    const tableIdValue = tableNoInput ? tableNoInput.value : 'N/A';
+                    
+                    // --- FIXES END HERE ---
+                    
+                    // Retrieve data needed for the API call
+                    const finalOrderId = currentOrderId;
+                    const finalTotal = lastCalculatedTotals ? lastCalculatedTotals.grandTotal : 0.00;
+                    
+                    if (!finalOrderId) {
+                        alert("Error: Order ID not generated. Cannot finalize payment.");
+                        return;
+                    }
+
+                    // ----------------- NEW API CALL LOGIC STARTS HERE -----------------
+
+                    const orderDataToSend = {
+                        // Use the locally defined tableIdValue
+                        table_id: tableIdValue, 
+                        // Assuming getCartItemsForAPI() is defined elsewhere
+                        items: getCartItemsForAPI(),         
+                        total_amount: parseFloat(finalTotal),
+                        payment_mode: selectedPaymentMode,
+                    };
+
+                    try {
+                        console.log(`--- CALLING /api/order/complete ---`);
+                        const response = await fetch('/api/order/complete', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(orderDataToSend)
+                        });
+
+                        if (!response.ok) {
+                            // Read error message from backend if available, otherwise use status
+                            const errorBody = await response.json().catch(() => ({ detail: `HTTP error! Status: ${response.status}` }));
+                            throw new Error(`Order Finalization Failed. ${errorBody.detail || 'Server error.'}`);
+                        }
+
+                        const result = await response.json();
+                        const confirmedOrderId = result.order_id; 
+
+                        console.log(`✅ Order ${confirmedOrderId} created as PENDING and stored in Redis.`);
+                        
+                        // Update the alert to use the local tableIdValue
+                        alert(`Order ${confirmedOrderId} created and SENT TO KITCHEN! Table: ${tableIdValue}`);
+                        
+                        // Cleanup:
+                        clearCart(); 
+                        closeBillModal();
+                        currentOrderId = null; 
+                        
+                    } catch (error) {
+                        console.error('🚨 Error completing order:', error);
+                        alert(`Error completing order. Details: ${error.message}`);
+                    }
+
+                    // ----------------- NEW API CALL LOGIC ENDS HERE -----------------
+                });
+            }
+
+        // 4. Close modal when user clicks outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('bill-modal');
+            if (event.target === modal) {
+                closeBillModal();
+            }
+        }
+    </script>
+</body>
+</html>

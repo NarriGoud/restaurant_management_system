@@ -1,0 +1,313 @@
+/* --- Variables and Base Styles --- */
+:root {
+    --color-admin: #e94e35; /* Primary Orange/Red for Admin */
+    --color-cashier: #2e353f; /* Dark Gray for Cashier */
+    --color-kitchen: #c9c9c9; /* Light Gray for Kitchen button */
+    --color-background: #f0f2f5;
+    --color-text-dark: #333;
+    --color-text-light: #555;
+    --card-bg: white;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --border-radius: 12px;
+    --accent-orange: #f55f30; /* Using the common accent color */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color-background);
+    color: var(--color-text-dark);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to the top of the viewport */
+    min-height: 100vh;
+    padding-top: 50px; /* Space from the top */
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 0 20px;
+}
+
+/* --- Logo Section Styling --- */
+.logo-section {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.logo-image {
+    display: inline-block;
+    background-color: var(--accent-orange);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+    margin-bottom: 10px;
+}
+
+.logo-icon {
+    font-size: 30px;
+}
+
+.logo-section h1 {
+    font-size: 2.2rem;
+    color: var(--color-text-dark);
+    margin-bottom: 5px;
+}
+
+.logo-section .tagline {
+    font-size: 1rem;
+    color: var(--color-text-light);
+}
+
+/* --- Portal Selection & Card Layout (Desktop) --- */
+.portal-selection {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 40px;
+    padding: 0 20px;
+    flex-wrap: wrap; 
+}
+
+.portal-card {
+    flex: 1 1 300px; 
+    max-width: 350px;
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 30px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease;
+}
+
+.portal-card:hover {
+    transform: translateY(-5px);
+}
+
+.icon-header {
+    margin-bottom: 20px;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    border-radius: 50%;
+    margin: 0 auto 20px auto;
+}
+
+.icon-header .icon {
+    font-size: 24px;
+    display: block;
+}
+
+/* Specific Card Headers */
+.admin .icon { color: var(--color-admin); }
+.cashier .icon { color: #f9d949; /* Bright color for dark background */ }
+.kitchen .icon { color: #2e353f; } /* Dark color for contrast on white bg */
+
+.admin { border: 2px solid var(--color-admin); }
+.cashier { border: 2px solid var(--color-cashier); }
+.kitchen { border: 2px solid var(--color-kitchen); }
+
+.portal-card h2 {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    color: var(--color-text-dark);
+}
+
+.portal-card .description {
+    font-size: 0.9rem;
+    color: var(--color-text-light);
+    margin-bottom: 20px;
+}
+
+/* --- Links (Login/Signup) --- */
+.links {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.link-btn {
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    color: var(--color-text-light);
+}
+
+.admin-card .login-link { border: 1px solid #ddd; background-color: white; }
+.cashier-card .login-link { border: 1px solid #ddd; background-color: white; }
+.kitchen-card .login-link { border: 1px solid #ddd; background-color: white; }
+
+
+/* --- Form Styling --- */
+.login-form {
+    text-align: left;
+}
+
+.login-form.active {
+    display: block;
+}
+
+.login-form label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--color-text-light);
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.login-button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    margin-top: 30px;
+    transition: background-color 0.2s, opacity 0.2s;
+}
+
+/* Button Colors */
+.admin-button { background-color: var(--color-admin); }
+.admin-button:hover { background-color: #c43c2c; }
+
+.cashier-button { background-color: var(--accent-orange); } /* Using main accent */
+.cashier-button:hover { background-color: #e05e2b; }
+
+.kitchen-button { background-color: var(--color-cashier); } /* Using dark grey */
+.kitchen-button:hover { background-color: #242a32; }
+
+.login-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* 🔥 NEW TAB STYLES (for Mobile) */
+.mobile-tab-nav {
+    display: none; /* Hidden by default (desktop) */
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    flex-grow: 1; 
+    padding: 12px 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.9rem; 
+    color: var(--color-text-light);
+    transition: color 0.2s, border-bottom 0.2s;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.tab-btn.active {
+    color: var(--accent-orange);
+    border-bottom: 2px solid var(--accent-orange);
+    font-weight: bold;
+    margin-bottom: -2px; 
+}
+
+
+/* =================================== */
+/* RESPONSIVENESS MEDIA QUERIES        */
+/* =================================== */
+
+/* 1. Mobile Layout (Max Width: 768px) */
+@media (max-width: 768px) {
+    
+    body {
+        padding-top: 30px;
+    }
+    
+    .container {
+        padding: 0 10px;
+    }
+
+    /* 🔥 Show Tab Navigation and make cards single column/stacked */
+    .mobile-tab-nav {
+        display: flex; /* Show tab navigation on mobile */
+        justify-content: space-around;
+        gap: 0;
+        margin-bottom: 0; 
+        background-color: var(--card-bg);
+        box-shadow: var(--shadow);
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+        border-bottom: 2px solid var(--accent-orange); /* Match tab active line */
+    }
+    
+    .mobile-tab-nav .tab-btn {
+        margin-bottom: -2px; /* Pull into border area */
+    }
+
+    .portal-selection {
+        flex-direction: column; /* Stack all cards */
+        align-items: center; 
+        gap: 0;
+        padding: 0;
+        margin-top: 0; /* Remove top margin */
+    }
+
+    .portal-card {
+        width: 100%;
+        max-width: 450px; 
+        padding: 25px;
+        /* Hide all cards by default on mobile, let JS/active-mobile-tab show one */
+        display: none; 
+        /* Adjust border radius to flow from the tab bar */
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        margin-top: 0; 
+        border: none; /* Remove individual card borders */
+    }
+    
+    .portal-card.active-mobile-tab {
+        display: block; /* Only show the active card */
+        /* Add a subtle border to the active card bottom for separation */
+        border: 2px solid #ddd;
+        border-top: none; 
+        margin-bottom: 20px; /* Add margin below the active card */
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15); /* Keep shadow for depth */
+    }
+    /* 🔥 END CHANGES FOR TABBED MOBILE VIEW */
+    
+    .logo-section h1 {
+        font-size: 1.8rem;
+    }
+}
+
+/* 2. Small Mobile (Max Width: 480px) */
+@media (max-width: 480px) {
+    .portal-card {
+        padding: 20px; 
+    }
+    
+    .login-form input {
+        padding: 10px; 
+    }
+    
+    .login-button {
+        padding: 12px; 
+    }
+}

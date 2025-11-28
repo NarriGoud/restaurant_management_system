@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TablePay Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* 🎨 DASHBOARD COLORS */
+        :root {
+            --dark-bg: #1e1e2d;         /* Main background */
+            --main-dark: #2a2a3e;       /* Header and Card Backgrounds */
+            --secondary-dark: #37374a;  /* Secondary/Input background */
+            --accent-orange: #f55f30;   /* Primary accent color */
+            --text-light: #ffffff;      /* Main text color */
+            --text-muted: #aaaaaa;      /* Muted text for headers/subtext */
+            --border-color: #444466;    /* Dark border color */
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --delete-red: #cc3333; 
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        /* 1. Header/Navigation Bar Styling */
+        .header {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: var(--main-dark);
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            background-color: var(--accent-orange);
+            border-radius: 4px;
+            margin-right: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-light);
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .logo-text h1 {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--text-light);
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            font-size: 14px;
+            gap: 0;
+        }
+
+        .user-info span:first-child {
+            color: var(--text-light);
+            font-weight: bold;
+        }
+
+        .user-info span:last-child {
+            color: var(--text-muted); 
+            font-weight: normal; 
+            font-size: 0.9em;
+        }
+
+        .logout-btn {
+            background-color: var(--accent-orange);
+            color: var(--text-light);
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            /* Keep flex and gap for alignment and spacing */
+            display: flex;
+            align-items: center;
+            gap: 5px; 
+        }
+        
+        /* 2. Main Content Wrapper and Spacing */
+        .main-container {
+            padding: 20px 5%; 
+            max-width: 1200px; 
+            margin: 0 auto;
+        }
+
+        /* 3. Tab Navigation Styling */
+        .tab-nav {
+            display: flex;
+            background-color: var(--main-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 20px;
+            width: 100%; 
+            overflow-x: auto; 
+            white-space: nowrap; 
+            padding: 0 5px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            color: var(--text-muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: border-bottom 0.1s;
+            flex-shrink: 0;
+        }
+
+        .tab-btn.active {
+            color: var(--text-light);
+            font-weight: bold;
+            border-bottom: 2px solid var(--accent-orange);
+        }
+        
+        /* Tab Content Container */
+        .tab-content {
+            padding: 15px 0;
+        }
+        
+        /* 4. Dashboard Grid Layout (Reports Tab) */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px; 
+        }
+
+        .card-row-1 {
+            grid-column: span 1;
+        }
+
+        .card-row-2 {
+            grid-column: span 2; 
+        }
+
+        /* 5. Card Component Styling (General) */
+        .card {
+            background-color: var(--main-dark);
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px var(--shadow-color);
+            border: 1px solid var(--border-color);
+            min-height: 100px; 
+        }
+
+        /* 7. Menu Management Specific Styles */
+        .menu-management-container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .menu-form-card {
+            flex: 1; 
+            min-width: 300px;
+            max-width: 400px;
+            background-color: var(--main-dark);
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            position: sticky; 
+            top: 20px;
+        }
+
+        /* Form styling */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--secondary-dark);
+            color: var(--text-light);
+            font-size: 0.9em;
+        }
+        
+        .submit-btn {
+            background-color: var(--accent-orange);
+            color: var(--text-light);
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .menu-table-container {
+            flex: 3;
+            overflow-x: auto; 
+        }
+
+        .menu-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 750px; 
+        }
+        
+        /* Style for images in the table */
+        .menu-table img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .menu-table th, .menu-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9em;
+            vertical-align: middle;
+        }
+        
+        /* Column Width Control */
+        .menu-table th:nth-child(1), .menu-table td:nth-child(1) { width: 50px; } /* Image */
+        .menu-table th:nth-child(2), .menu-table td:nth-child(2) { width: 20%; } /* Name */
+        .menu-table th:nth-child(3), .menu-table td:nth-child(3) { width: 15%; } /* Category */
+        .menu-table th:nth-child(4), .menu-table td:nth-child(4) { width: 80px; } /* Price */
+        .menu-table th:nth-child(5), .menu-table td:nth-child(5) { width: 35%; max-width: 250px; } /* Description */ 
+        .menu-table th:nth-child(6), .menu-table td:nth-child(6) { width: 120px; } /* Actions */
+
+
+        /* Crucial CSS to make buttons visible and stacked */
+        .menu-table td.action-cell {
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px;      
+            justify-content: center; 
+            align-items: flex-start;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            white-space: nowrap; 
+            background-color: var(--main-dark); 
+            color: var(--accent-orange);
+            border: 1px solid var(--accent-orange);
+            transition: background-color 0.1s, color 0.1s;
+        }
+        
+        .action-btn.delete-btn {
+            background-color: var(--delete-red);
+            color: var(--text-light);
+            border: 1px solid var(--delete-red);
+        }
+        
+        /* =================================== */
+        /* RESPONSIVENESS (Media Queries)      */
+        /* =================================== */
+        
+        /* 1. Tablet/Mid-size Screen Layout (Max Width: 992px) */
+        @media (max-width: 992px) {
+            .main-container {
+                padding: 20px 5%;
+            }
+            
+            /* Reports Dashboard: Change 4-column to 2-column */
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .card-row-1,
+            card-row-2 {
+                grid-column: span 1;
+            }
+            
+            /* Menu Management: Stack form and table vertically */
+            .menu-management-container {
+                flex-direction: column; 
+            }
+            .menu-form-card {
+                width: 100%;
+                max-width: none;
+                position: static; 
+            }
+            .menu-table-container {
+                width: 100%; 
+            }
+        }
+        
+        /* 2. Mobile Screen Layout (Max Width: 576px) */
+        @media (max-width: 576px) {
+            
+            /* Header: Stack elements vertically */
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px;
+            }
+
+            .user-actions {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 15px; 
+                padding-top: 10px;
+                border-top: 1px solid var(--secondary-dark);
+                gap: 10px;
+            }
+            
+            /* Main Content Padding */
+            .main-container {
+                padding: 15px;
+            }
+            
+            /* Reports Dashboard: Change 2-column to single-column */
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo-icon">T</div> 
+            <div class="logo-text">
+                <h1>TablePay</h1>
+                <p>Smart Dining. Smarter Billing</p>
+            </div>
+        </div>
+        <div class="user-actions">
+            <div class="user-info">
+                <span id="user-name-display">GOWTHAM</span> 
+                <span id="user-portal-display">Admin</span> 
+            </div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="reports">Reports</button>
+            <button class="tab-btn" data-tab="order-history">Order History</button>
+            <button class="tab-btn" data-tab="menu-management">Menu Management</button>
+            <button class="tab-btn" data-tab="billing">Billing</button>
+        </nav>
+        
+        <div id="reports-content" class="tab-content" style="display: block;">
+            <div class="dashboard-grid">
+                
+                <div class="card card-row-1">
+                    <div class="card-header">Total Sales <span class="card-header-icon">₹</span></div>
+                    <div class="card-value">₹878.90</div>
+                    <div class="card-subtext">Today's revenue</div>
+                </div>
+
+                <div class="card card-row-1">
+                    <div class="card-header">Total Orders <span class="card-header-icon">🛒</span></div>
+                    <div class="card-value">2</div>
+                    <div class="card-subtext">Orders completed</div>
+                </div>
+
+                <div class="card card-row-1">
+                    <div class="card-header">Average Order <span class="card-header-icon">📈</span></div>
+                    <div class="card-value">₹439.45</div>
+                    <div class="card-subtext">Per order value</div>
+                </div>
+
+                <div class="card card-row-1">
+                    <div class="card-header">Tax Collected <span class="card-header-icon">💸</span></div>
+                    <div class="card-value">₹39.95</div>
+                    <div class="card-subtext">GST (5%)</div>
+                </div>
+
+                <div class="card card-row-2">
+                    <div class="card-header" style="justify-content: start; color: var(--text-light); font-weight: bold;">Payment Methods</div>
+                    
+                    <div class="list-card-item">
+                        <span class="list-card-item-label">Cash</span>
+                        <span class="list-card-item-value">₹768.90</span>
+                    </div>
+                    <div class="list-card-item">
+                        <span class="list-card-item-label">Card</span>
+                        <span class="list-card-item-value">₹0.00</span>
+                    </div>
+                    <div class="list-card-item" style="border-bottom: none;">
+                        <span class="list-card-item-label">UPI</span>
+                        <span class="list-card-item-value">₹110.00</span>
+                    </div>
+                    
+                </div>
+
+                <div class="card card-row-2">
+                    <div class="card-header" style="justify-content: start; color: var(--text-light); font-weight: bold;">Additional Charges</div>
+
+                    <div class="list-card-item">
+                        <div>
+                            <span class="list-card-item-label">GST (5%)</span>
+                            <div class="list-subtext">Tax collected</div>
+                        </div>
+                        <span class="list-card-item-value">₹39.95</span>
+                    </div>
+                    <div class="list-card-item" style="border-bottom: none;">
+                        <div>
+                            <span class="list-card-item-label">Service Charge (5%)</span>
+                            <div class="list-subtext">Service Sales</div>
+                        </div>
+                        <span class="list-card-item-value">₹39.95</span>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+        <div id="menu-management-content" class="tab-content" style="display: none;">
+            <h2>Menu Management</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Use the form to create new items or edit existing ones.</p>
+            
+            <div class="menu-management-container">
+                
+                <div class="menu-form-card">
+                    <h3 id="form-title">Create New Menu Item</h3>
+                    <form id="menu-item-form">
+                        <input type="hidden" id="item-id">
+                        
+                        <div class="form-group">
+                            <label for="item-name">Item Name</label>
+                            <input type="text" id="item-name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="item-description">Description</label>
+                            <textarea id="item-description" rows="2" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="item-price">Price (₹)</label>
+                            <input type="number" id="item-price" min="1" step="0.01" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="item-category">Category</label>
+                            <select id="item-category" required>
+                                <option value="Beverages">Beverages</option>
+                                <option value="Starters">Starters</option>
+                                <option value="Main Course">Main Course</option>
+                                <option value="Desserts">Desserts</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="item-image-url">Image URL (Optional)</label>
+                            <input type="url" id="item-image-url" placeholder="e.g., https://raw.githubusercontent.com/NarriGoud/menu-images/main/biryani.jpg">
+                        </div>
+                        
+                        <button type="submit" class="submit-btn" id="submit-button">Add Item</button>
+                        <button type="button" class="submit-btn" id="cancel-button" style="display: none; background-color: var(--secondary-dark); border: 1px solid var(--border-color); color: var(--text-light); margin-top: 10px;">Cancel Edit</button>
+                    </form>
+                </div>
+                
+                <div class="menu-table-container">
+                    <table class="menu-table">
+                        <thead>
+                            <tr>
+                                <th>Image</th> 
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="menu-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div id="order-history-content" class="tab-content" style="display: none;">
+            <p style="color: var(--text-muted);">Order History content goes here...</p>
+        </div>
+        <div id="billing-content" class="tab-content" style="display: none;">
+            <p style="color: var(--text-muted);">Billing settings content goes here...</p>
+        </div>
+        
+    </div>
+
+    <script>
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const logoutButton = document.getElementById('logout-btn');
+        const menuTableBody = document.getElementById('menu-table-body');
+        const menuItemForm = document.getElementById('menu-item-form');
+        const formTitle = document.getElementById('form-title');
+        const submitButton = document.getElementById('submit-button');
+        const cancelButton = document.getElementById('cancel-button');
+        
+        // --- API Configuration ---
+        const API_BASE_URL = '/api/menu'; 
+        let currentMenuData = []; 
+
+        // 1. FETCH (Read) Function (Connects to FastAPI/MongoDB)
+        async function fetchMenuData() {
+            try {
+                const response = await fetch('/api/menu'); 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error("Error fetching menu data:", error);
+                return []; 
+            }
+        }
+
+        // --- RENDER (Read) Function (FIXED and DEBUGGED) ---
+        async function loadMenuTable() {
+            // Data fetched directly from the database API
+            currentMenuData = await fetchMenuData(); 
+            menuTableBody.innerHTML = ''; 
+            
+            // CRITICAL DEBUGGING: Log the received data structure to confirm ID is present
+            console.log("Menu data received from API:", currentMenuData); 
+            
+            if (currentMenuData.length === 0) {
+                menuTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No menu items found. Add a new item above.</td></tr>';
+                return;
+            }
+
+            // --- DATA FOUND, START RENDERING ---
+            currentMenuData.forEach((item, index) => {
+                // Determine the reliable ID to use for the row and buttons
+                const itemDbId = item.id || item._id; 
+                
+                // CRITICAL DEBUGGING: Check if the ID is missing
+                if (!itemDbId) {
+                    console.error(`🚨 Item at index ${index} is missing both 'id' and '_id' properties. Check your main.py/Pydantic V2 model.`);
+                    return; // Skip rendering a row without a valid ID
+                }
+                
+                const row = menuTableBody.insertRow();
+                row.dataset.id = itemDbId; 
+
+                // 1. Image Cell (Image URL handling confirmed)
+                const imgCell = row.insertCell();
+                const img = document.createElement('img');
+                // Using a generic placeholder URL as a final fallback
+                img.src = item.menuImageUrl || 'https://via.placeholder.com/50x50/37374a/ffffff?text=No+Img';
+                img.alt = item.name;
+                imgCell.appendChild(img);
+
+                // 2. Name
+                row.insertCell().textContent = item.name;
+                
+                // 3. Category
+                row.insertCell().textContent = item.category;
+
+                // 4. Price
+                row.insertCell().textContent = `₹${item.price.toFixed(2)}`;
+
+                // 5. Description (Snippet)
+                row.insertCell().textContent = item.description.substring(0, 50) + '...';
+
+                // 6. Actions Cell
+                const actionCell = row.insertCell();
+                actionCell.classList.add('action-cell'); 
+                
+                // Edit Button
+                const editBtn = document.createElement('button');
+                editBtn.textContent = 'Edit';
+                editBtn.classList.add('action-btn', 'edit-btn');
+                editBtn.dataset.id = itemDbId; // Use the reliable ID
+                
+                // Delete Button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.classList.add('action-btn', 'delete-btn');
+                deleteBtn.dataset.id = itemDbId; // Use the reliable ID
+                
+                actionCell.appendChild(editBtn);
+                actionCell.appendChild(deleteBtn);
+            });
+        }
+        
+        // --- CREATE / UPDATE Function (Connects to FastAPI/MongoDB) ---
+        async function saveMenuItem(event) {
+            event.preventDefault();
+            
+            // 1. Robustly Retrieve the Item ID and ensure it is trimmed.
+            const itemIdElement = document.getElementById('item-id');
+            const id = itemIdElement ? String(itemIdElement.value || '').trim() : ''; 
+            
+            // 2. Gather other form data
+            const name = document.getElementById('item-name').value;
+            const description = document.getElementById('item-description').value;
+            const price = parseFloat(document.getElementById('item-price').value);
+            const category = document.getElementById('item-category').value;
+            const menuImageUrl = document.getElementById('item-image-url').value;
+            
+            if (isNaN(price) || price <= 0) {
+                alert("Please enter a valid price.");
+                return;
+            }
+
+            const payload = {
+                name,
+                description,
+                price,
+                category,
+                menuImageUrl: menuImageUrl || null 
+            };
+            
+            const method = id ? 'PUT' : 'POST';
+            // Use the clean 'id' variable to construct the URL
+            const url = id ? `${API_BASE_URL}/${id}` : API_BASE_URL; 
+
+            submitButton.disabled = true;
+            submitButton.textContent = id ? 'Saving...' : 'Adding...';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `Failed to ${method === 'POST' ? 'create' : 'update'} item.`);
+                }
+
+                alert(`Item ${method === 'POST' ? 'created' : 'updated'} successfully!`);
+
+            } catch (error) {
+                console.error(`Error during ${method} operation:`, error);
+                alert(`API Error: ${error.message}`);
+            } finally {
+                submitButton.disabled = false;
+                await loadMenuTable(); 
+                resetForm();
+            }
+        }
+
+        // --- DELETE Function (Connects to FastAPI/MongoDB) ---
+        async function deleteMenuItem(id) {
+            if (!confirm(`Are you sure you want to delete item ID: ${id.substring(0, 8)}...? This cannot be undone.`)) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/${id}`, {
+                    method: 'DELETE',
+                });
+                
+                if (response.status === 204) { 
+                    alert(`Item deleted successfully.`);
+                } else {
+                    // Check if response has body before trying to parse JSON
+                    const errorText = await response.text();
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        throw new Error(errorData.detail || 'Failed to delete item.');
+                    } catch {
+                        // Handle case where body is not valid JSON
+                        throw new Error(`Failed to delete item. Server status: ${response.status}`);
+                    }
+                }
+            } catch (error) {
+                console.error("Error during DELETE operation:", error);
+                alert(`API Error: ${error.message}`);
+            } finally {
+                await loadMenuTable(); 
+            }
+        }
+        
+        // --- EDIT UI Setup Function (FIXED and DEBUGGED) ---
+        function editMenuItem(id) {
+            
+            // Ensure the ID coming from the button is a clean string
+            const targetId = String(id).trim(); 
+            
+            // CRITICAL DEBUGGING: Log the ID we are looking for
+            console.log(`Attempting to find item with target ID: "${targetId}"`);
+
+            // FIX: Use robust lookup (id or _id)
+            const item = currentMenuData.find(i => 
+                String(i.id) === targetId || String(i._id) === targetId
+            ); 
+            
+            if (!item) {
+                console.error(`❌ Item with ID "${targetId}" not found in currentMenuData. currentMenuData contains:`, currentMenuData);
+                alert("Error: Item not found for editing. Try reloading the menu.");
+                return;
+            }
+            
+            // Determine the reliable ID for the form field and display
+            const displayId = item.id || item._id; 
+            
+            // CRITICAL DEBUGGING: Log the item found
+            console.log("✅ Item successfully found:", item);
+
+            // Populate form fields
+            document.getElementById('item-id').value = displayId; 
+            document.getElementById('item-name').value = item.name;
+            document.getElementById('item-description').value = item.description;
+            document.getElementById('item-price').value = item.price;
+            document.getElementById('item-category').value = item.category;
+            document.getElementById('item-image-url').value = item.menuImageUrl || ''; 
+            
+            // Change button and title text for edit mode
+            formTitle.textContent = `Edit Menu Item (ID: ${String(displayId).substring(0, 8)}...)`;
+            submitButton.textContent = 'Save Changes';
+            cancelButton.style.display = 'block';
+
+            // Scroll to the form to ensure the user sees the populated fields
+            document.getElementById('menu-item-form').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // --- Form Reset Function ---
+        function resetForm() {
+            menuItemForm.reset();
+            document.getElementById('item-id').value = ''; 
+            formTitle.textContent = 'Create New Menu Item';
+            submitButton.textContent = 'Add Item';
+            cancelButton.style.display = 'none';
+        }
+
+        // --- Event Listeners and Initialisation ---
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // === Display User Info from localStorage ===
+            const userName = localStorage.getItem('userName');
+            const userPortal = localStorage.getItem('userPortal');
+            
+            const userNameDisplay = document.getElementById('user-name-display');
+            const userPortalDisplay = document.getElementById('user-portal-display');
+            
+            if (userName && userNameDisplay) {
+                userNameDisplay.textContent = userName; 
+            }
+            if (userPortal && userPortalDisplay) {
+                // Capitalize the first letter for display (Admin, Cashier, etc.)
+                userPortalDisplay.textContent = userPortal.charAt(0).toUpperCase() + userPortal.slice(1);
+            }
+            // === END Display User Info ===
+
+            // --- Tab Switching Logic ---
+            tabButtons.forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const targetTab = e.target.dataset.tab;
+                    
+                    // Update tab active state
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // Show/Hide content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.style.display = 'none';
+                        if (content.id === targetTab + '-content') {
+                            content.style.display = 'block';
+                        }
+                    });
+                    
+                    // Load menu table when switching to Menu Management tab
+                    if (targetTab === 'menu-management') {
+                        await loadMenuTable();
+                    }
+                });
+            });
+
+            // --- Menu Management Event Listeners ---
+            menuItemForm.addEventListener('submit', saveMenuItem);
+            cancelButton.addEventListener('click', resetForm);
+            
+            // Event delegation for Edit and Delete buttons on the table
+            menuTableBody.addEventListener('click', (e) => {
+                const btn = e.target.closest('.action-btn');
+                if (!btn) return;
+                
+                // Use .trim() to remove any potential whitespace/non-printable chars from the ID
+                const id = btn.dataset.id.trim(); 
+                
+                if (btn.classList.contains('edit-btn')) {
+                    editMenuItem(id);
+                } else if (btn.classList.contains('delete-btn')) {
+                    deleteMenuItem(id);
+                }
+            });
+
+            // --- Logout Redirection Logic ---
+            if (logoutButton) {
+                logoutButton.addEventListener('click', () => {
+                    // Clear user info on logout
+                    localStorage.removeItem('userName'); 
+                    localStorage.removeItem('userPortal');
+                    window.location.href = '/'; 
+                });
+            }
+            
+            // Initial Load: Check if the 'menu-management' tab is set as active on load
+            const menuTabButton = document.querySelector('.tab-btn[data-tab="menu-management"]');
+            if (menuTabButton && menuTabButton.classList.contains('active')) {
+                loadMenuTable();
+            }
+        });
+    </script>
+</body>
+</html>
