@@ -7,66 +7,34 @@
 
 ---
 
-## 🚀 Project Goal
+## 💡 Project Overview
 
-**TablePay** is a high-performance, full-stack web application designed to modernize restaurant operations. It provides role-based portals for **Admin**, **Cashier**, and **Kitchen** staff, using a fast caching layer (**Redis**) for real-time order updates and reliable persistence (**MongoDB**) for completed transactions.
+**TablePay** is a high-performance, full-stack web application designed to modernize restaurant operations. It provides role-based portals for **Admin**, **Cashier**, and **Kitchen** staff, leveraging a two-tier data strategy: **Redis** for real-time order updates and **MongoDB** for reliable transaction persistence.
 
 ---
 
 ## ✨ Key Features & Roles
 
-The system is built around three distinct user experiences:
+The system is split into specialized dashboards for efficient workflow management:
 
-### 👨‍💼 Admin Portal (`admin_dashboard.html`)
-* **Menu Management:** Full **CRUD** (Create, Read, Update, Delete) functionality for all menu items.
-* **Data Control:** Handles master data, ensuring consistency across the system.
-
-### 💰 Cashier Portal (`cashier_dashboard.html`)
-* **Order Creation:** Intuitive interface for building new orders tied to a specific table ID.
-* **Billing & Export:** Generates bills, including a dynamic **QR Code** and an exportable **PDF** receipt (using `jspdf` and `qrcodejs`).
-* **Kitchen Submission:** Finalizes the order and sends it immediately to the Kitchen queue.
-
-### 🧑‍🍳 Kitchen Portal (`kitchen_dashboard.html`)
-* **Real-time Queue:** Displays all active orders in **Pending**, **Preparing**, and **Ready** statuses.
-* **Auto-Refresh:** Automatically refreshes the order list every **10 seconds** for low-latency updates.
-* **Status Updates:** Allows staff to quickly update an order's status, moving it toward completion.
-
----
-
-## ⚙️ Technology Stack
-
-| Component | Files | Technologies | Role |
+| Portal | File | Core Functionality | Technologies |
 | :--- | :--- | :--- | :--- |
-| **Backend API** | `main.py`, `cache.py` | **FastAPI**, **Python**, **Motor**, **Pydantic** | Handles business logic and routing |
-| **Caching Layer** | `cache.py` | **Redis** | Stores and retrieves *active, in-progress* orders quickly |
-| **Persistence** | `main.py` | **MongoDB** | Stores *served/completed* orders permanently |
-| **Frontend UI** | `.html`, `.css`, `.js` | **HTML5**, **CSS3** (`style.css`), **JavaScript** (`index.js`) | Multi-portal user interface |
-| **Dependencies** | `cashier_dashboard.html` | `html2canvas`, `jspdf`, `qrcodejs` | Client-side PDF generation and QR codes |
+| **👨‍💼 Admin** | `admin_dashboard.html` | **CRUD** (Create, Read, Update, Delete) for Menu Items. | HTML, JS, FastAPI API |
+| **💰 Cashier** | `cashier_dashboard.html` | Order creation, bill generation, **PDF** export, and **QR Code** payment link generation. | JS (`jspdf`, `qrcodejs`) |
+| **🧑‍🍳 Kitchen** | `kitchen_dashboard.html` | Real-time queue, display of orders by status (Pending, Preparing, Ready), **10-second auto-refresh**. | HTML, JS, Redis Cache |
 
 ---
 
 ## 🛠️ Architecture & Data Flow
 
-The system uses a **Redis-as-Cache/MongoDB-as-DB** pattern for optimized performance in a high-turnover environment.
+TablePay is built on a standard Python **FastAPI** backend (`main.py`) using an optimized **Cache-Aside Pattern** to handle high-volume, low-latency order updates.
 
-1.  **New Order Creation (Cashier)**
-    * Cashier submits order via `/api/order/new`.
-    * `main.py` validates the order and calls `cache.set_active_order_cache()`.
-    * The new order is immediately stored in **Redis** with the status **'pending'**.
 
-2.  **Order Processing (Kitchen)**
-    * Kitchen Dashboard calls `/api/orders/active` every 10 seconds.
-    * `main.py` calls `cache.get_all_active_orders()`.
-    * All in-progress orders are retrieved directly from the fast **Redis** cache.
 
-3.  **Status Change (Kitchen)**
-    * Kitchen staff updates status via `/api/order/{order_id}/status`.
-    * `main.py` updates the order's status in **Redis** (`cache.update_active_order_status()`).
+### Data Strategy:
 
-4.  **Order Completion (Persistence)**
-    * When the status is set to **'served'**:
-        * `main.py` saves the final order document to the **MongoDB** `ORDER_COLLECTION`.
-        * `main.py` calls `cache.delete_active_order_cache()` to remove the order from **Redis**, ensuring the cache only holds active items.
+* **Active Orders (High Speed):** New and in-progress orders (Pending, Preparing, Ready) are stored in the **Redis** cache (`cache.py`) for millisecond access by the Kitchen portal.
+* **Completed Orders (Persistence):** When an order is marked as **'served'**, it is logged to the **MongoDB** `ORDER_COLLECTION` for permanent records and immediately removed from Redis.
 
 ---
 
@@ -74,24 +42,15 @@ The system uses a **Redis-as-Cache/MongoDB-as-DB** pattern for optimized perform
 
 ### Prerequisites
 
-Ensure you have the following services running and accessible:
+Ensure you have the following services running and accessible before starting the application:
 
-* **Python 3.8+**
-* **MongoDB** instance
-* **Redis** server
+1.  **Python 3.8+**
+2.  **MongoDB** instance
+3.  **Redis** server
 
-### 1. Backend Setup
+### 1. Install Dependencies
 
-The project uses a standard `requirements.txt` for all Python dependencies.
+Install all necessary Python packages using the provided `requirements.txt` file:
 
-#### A. Create `requirements.txt`
-Create a file named `requirements.txt` in your project root with the following contents:
-
-```text
-# requirements.txt
-fastapi
-uvicorn[standard]
-motor
-python-dotenv
-redis
-pydantic
+```bash
+pip install -r requirements.txt
